@@ -1,252 +1,175 @@
-"use client";
+'use client';
+import { useState, useEffect } from 'react';
 
-import React, { useState, useEffect } from 'react';
+export default function Page() {
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [selectedHtml, setSelectedHtml] = useState<string>("");
+  const [targetKeyword, setTargetKeyword] = useState<string>("");
+  const [inputKeyword, setInputKeyword] = useState<string>(""); 
+  const [loading, setLoading] = useState<boolean>(true);
+  const [generating, setGenerating] = useState<boolean>(false); 
 
-interface HistoryItem {
-  id: string;
-  keyword: string;
-  created_at: string;
-  content?: string;
-}
-
-export default function RankYouApp() {
-  const [keyword, setKeyword] = useState<string>("");
-  const [htmlContent, setHtmlContent] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const [email, setEmail] = useState<string>("");
-  const [isSubmittingEmail, setIsSubmittingEmail] = useState<boolean>(false);
-  const [subscribed, setSubscribed] = useState<boolean>(false);
-  const [campaignHistory, setCampaignHistory] = useState<HistoryItem[]>([]);
-
-  const fetchHistoryLogs = async () => {
+  const loadData = async () => {
     try {
       const res = await fetch('/api/history');
-      if (res.ok) {
-        const data = await res.json();
-        setCampaignHistory(data);
-      }
+      if (!res.ok) throw new Error('API server error');
+      const data = await res.json();
+      if (Array.isArray(data)) setCampaigns(data);
     } catch (err) {
-      console.error("Failed to query history log tracks:", err);
+      console.error("Database tracking hydration failed:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchHistoryLogs();
+    loadData();
   }, []);
-
-  const handleEmailSubscribe = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim() || isSubmittingEmail) return;
-
-    setIsSubmittingEmail(true);
-    try {
-      const response = await fetch('/api/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim() }),
-      });
-
-      if (response.ok) {
-        setSubscribed(true);
-        setEmail("");
-      } else {
-        const errData = await response.json();
-        alert(errData.error || "Subscription pipeline failed.");
-      }
-    } catch (error) {
-      alert("Network connectivity issue. Please try again.");
-    } finally {
-      setIsSubmittingEmail(false);
-    }
-  };
 
   const handleLaunchPipeline = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!keyword.trim() || isLoading) return;
-
-    setHtmlContent("");
-    setIsLoading(true);
-
+    if (!inputKeyword.trim()) return alert("Please enter a target keyword first!");
+    setGenerating(true);
     try {
-      const response = await fetch('/api/generate', {
+      const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ keyword: keyword.trim() }),
+        body: JSON.stringify({ keyword: inputKeyword })
       });
-
-      if (!response.body) throw new Error("No payload data stream returned.");
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let currentText = "";
-
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        
-        currentText += decoder.decode(value);
-        setHtmlContent(currentText); 
+      if (res.ok) {
+        setInputKeyword(""); 
+        alert("Pipeline completed! New article saved directly to database clusters.");
+        await loadData(); 
+      } else {
+        alert("Pipeline failed. Ensure your OpenAI configuration keys are loaded.");
       }
-      
-      fetchHistoryLogs();
-    } catch (error) {
-      alert("Failed to establish stream connection with the generation engine.");
+    } catch (err) {
+      alert("Network compilation timeout occurred during generation cycle.");
     } finally {
-      setIsLoading(false);
+      setGenerating(false);
     }
   };
+
+  const handleMcpExport = async () => {
+    if (!selectedHtml) return alert("Select a campaign item from the sidebar first.");
+    try {
+      const res = await fetch('/api/mcp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ keyword: targetKeyword, html_content: selectedHtml })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert("Draft exported cleanly via MCP!");
+      } else {
+        alert(`Export failed: ${data.error || 'Check server configuration'}`);
+      }
+    } catch (err) {
+      alert("Network transmission error occurred.");
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-slate-800 antialiased font-sans">
-      <header className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="h-5 w-5 rounded bg-gradient-to-tr from-rose-500 to-amber-500 shadow-md shadow-rose-500/20" />
-          <span className="text-xl font-extrabold tracking-tight font-mono text-slate-900">RankYou</span>
-        </div>
-        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
-          <a href="#" className="hover:text-rose-500 transition-colors">Interactive Demo</a>
-          <a href="#" className="hover:text-rose-500 transition-colors">CMS Integrations</a>
-          <a href="#" className="hover:text-rose-500 transition-colors">Database Sync</a>
-        </nav>
-        <button className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-medium text-sm rounded-lg transition-all shadow-sm">Sign In</button>
-      </header>
-
-      <section className="max-w-4xl mx-auto text-center pt-16 pb-12 px-6">
-        <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.1] mb-6 max-w-4xl mx-auto">
-          Own the Search Rankings <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-amber-500">Traffic on Autopilot</span>
-        </h1>
-        <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed mb-8">
-          Grow organic traffic continuously. Publish conversion-optimized articles to your website and scale your visibility even while you sleep.
-        </p>
-
-        <div className="max-w-md mx-auto mb-20">
-          {subscribed ? (
-            <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-sm font-semibold font-mono text-center shadow-sm">
-              ✨ Welcome aboard! Your access spot has been locked in database.
-            </div>
-          ) : (
-            <form onSubmit={handleEmailSubscribe} className="flex gap-2 p-1.5 bg-white border border-orange-100 rounded-xl shadow-md shadow-amber-900/5">
-              <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email for early access..." className="flex-1 bg-transparent px-3 text-sm focus:outline-none" disabled={isSubmittingEmail} />
-              <button type="submit" disabled={isSubmittingEmail} className="px-5 py-2.5 bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white text-sm font-bold rounded-lg shadow-sm transition-all disabled:opacity-60">
-                {isSubmittingEmail ? "Saving..." : "Get Traffic"}
-              </button>
-            </form>
-          )}
-        </div>
-      </section>
-
-      <section className="max-w-5xl mx-auto px-6 pb-24">
-        <div className="bg-white border border-orange-100 rounded-2xl shadow-xl shadow-amber-900/5 overflow-hidden">
-          <div className="p-6 border-b border-orange-100/60 bg-[#FFFDFB] flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-base font-bold text-slate-900">RankYou Workspace Dashboard</h2>
-              <p className="text-xs text-slate-500 font-mono mt-0.5">Autonomous Optimization Engine Pipeline</p>
-            </div>
-            <form onSubmit={handleLaunchPipeline} className="flex gap-2 min-w-[340px]">
-              <input type="text" value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="Enter target keyword..." className="flex-1 px-4 py-2 border border-slate-200 bg-white text-sm rounded-lg focus:outline-none focus:border-rose-400 font-mono" />
-              <button type="submit" disabled={isLoading} className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-mono text-xs font-bold rounded-lg transition-all disabled:opacity-50">
-                {isLoading ? "Launching..." : "Launch Pipeline"}
-              </button>
-            </form>
+    <div className="min-h-screen bg-[#12161A] text-[#F5F5F4] font-sans antialiased selection:bg-orange-500/30">
+      <nav className="border-b border-[#1A2026] bg-[#12161A]/80 backdrop-blur-md sticky top-0 z-50 px-6 py-4">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="flex items-center space-x-3">
+            <span className="h-3 w-3 rounded-full bg-gradient-to-r from-orange-500 to-rose-500 shadow-md shadow-orange-500/20" />
+            <span className="font-bold tracking-tight text-xl bg-gradient-to-r from-orange-400 via-rose-400 to-white bg-clip-text text-transparent">
+              RankYou Project Platform
+            </span>
           </div>
-
-          <div className="flex h-[550px]">
-            <aside className="w-64 border-r border-orange-100/60 bg-[#FFFDFB] p-4 flex flex-col justify-between">
-              <div className="w-full">
-                <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase block mb-3 font-mono">Campaign History Logs</span>
-                <div className="space-y-1.5 overflow-y-auto max-h-[420px] custom-scrollbar pr-1">
-                  {campaignHistory.length > 0 ? (
-                    campaignHistory.map((item) => (
-                      <div key={item.id} onClick={() => { setKeyword(item.keyword); setHtmlContent(item.content || ""); }} className="group flex flex-col text-left p-2.5 border border-orange-100/30 rounded-xl bg-orange-50/20 hover:bg-rose-50/40 hover:border-rose-100/60 transition-all cursor-pointer shadow-sm">
-                        <span className="text-xs font-semibold text-slate-700 group-hover:text-rose-600 truncate font-mono">{item.keyword || 'Untitled Campaign'}</span>
-                        <span className="text-[9px] text-slate-400 font-mono mt-0.5">{new Date(item.created_at).toLocaleDateString()}</span>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="p-5 border border-dashed border-orange-200 bg-orange-50/10 rounded-xl text-center my-4 animate-pulse">
-                      <p className="text-sm font-bold text-slate-700 font-mono">No Campaigns Found</p>
-                      <p className="text-xs text-slate-400 font-mono mt-1 leading-normal">Launch a pipeline above to sync rows.</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="text-[10px] font-mono text-slate-400 border-t border-orange-100/40 pt-3">Pipeline Synchronized</div>
-            </aside>
-
-            <main className="flex-1 bg-[#FAF8F5]/30 p-6 flex flex-col">
-              <div className="flex-1 flex flex-col bg-white border border-orange-100/60 rounded-xl overflow-hidden shadow-sm shadow-amber-900/5">
-                                {/* Header Strip inside Workspace Display with Search Engine Target Indicators */}
-                                <div className="flex items-center justify-between px-4 py-3 bg-[#FFFDFB] border-b border-orange-100/40">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-rose-400" />
-                    <span className="text-[11px] font-bold tracking-wider uppercase text-rose-500 font-mono">
-                      Workspace Content Preview
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center gap-4">
-                    {/* Monochromatic Target Search Engine Tracking Array */}
-                    <div className="flex items-center gap-2 border-r border-orange-100/60 pr-4 mr-1">
-                      <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider mr-1">Targets:</span>
-                      
-                      {/* Google Icon Indicator */}
-                      <svg className="h-3.5 w-3.5 text-slate-400/80 hover:text-slate-600 transition-colors" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12.24 10.285V13.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.866-3.577-7.866-8s3.536-8 7.866-8c2.46 0 4.105 1.025 5.047 1.926l2.427-2.334C17.955 2.192 15.34 1 12.24 1 5.92 1 1 5.92 1 12s4.92 11 11.24 11c6.59 0 10.97-4.63 10.97-11.17 0-.753-.08-1.32-.178-1.545H12.24z"/>
-                      </svg>
-                      
-                      {/* Microsoft Bing Icon Indicator */}
-                      <svg className="h-3.5 w-3.5 text-slate-400/80 hover:text-slate-600 transition-colors" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M5.002 1v22l10.5-6 4.5-1.5-6.5-2.5 4-4.5z"/>
-                      </svg>
-                      
-                      {/* DuckDuckGo Icon Indicator */}
-                      <svg className="h-3.5 w-3.5 text-slate-400/80 hover:text-slate-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
-                        <path d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"/>
-                        <circle cx="12" cy="12" r="1"/>
-                      </svg>
-                    </div>
-
-                    {/* Actionable MCP Export Hook Button */}
-                                        {/* Actionable CMS Export Hook Button */}
-                                        <button
-                      onClick={async () => {
-                        if (!keyword.trim() || !htmlContent.trim()) {
-                          return alert("Please select or launch a campaign article pipeline first!");
-                        }
-                        try {
-                          const res = await fetch('/api/mcp', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ 
-                              keyword: keyword.trim(),
-                              htmlContent: htmlContent.trim() // Sends your full generated article string safely!
-                            })
-                          });
-                          if (res.ok) alert("🚀 Article successfully dispatched to your CMS collection pipeline!");
-                          else alert("CMS endpoint handshake rejected or credentials misconfigured.");
-                        } catch (err) {
-                          alert("Network error contacting server channels.");
-                        }
-                      }}
-                      className="text-[10px] font-mono font-bold text-white bg-gradient-to-r from-rose-500 to-amber-500 hover:opacity-90 px-2.5 py-1 rounded shadow-sm shadow-rose-500/10 transition-all"
-                    >
-                      🔌 Export via MCP
-                    </button>
-
-                    
-                    <span className="text-[10px] text-amber-700/90 font-mono bg-amber-50 px-2 py-0.5 rounded border border-amber-100/60">
-                      gpt-4o-mini engine
-                    </span>
-                  </div>
-                </div>
-
-              </div>
-            </main>
+          <div className="text-xs text-[#788896] font-mono bg-[#1A2026] px-3 py-1.5 rounded-lg border border-[#232B33]">
+            Engine Status: <span className="text-orange-400 font-semibold">gpt-4o-mini Live</span>
           </div>
         </div>
-      </section>
+      </nav>
+
+      <main className="max-w-7xl mx-auto p-6 md:p-8 space-y-6">
+        <div className="bg-[#1A2026] border border-[#232B33] rounded-2xl p-6 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-[#F5F5F4]">RankYou Workspace Dashboard</h1>
+            <p className="text-xs text-[#788896] mt-0.5">Autonomous Optimization Engine Pipeline</p>
+          </div>
+          <form onSubmit={handleLaunchPipeline} className="w-full md:w-auto flex items-center gap-3">
+            <input 
+              type="text" 
+              placeholder="Enter target keyword..." 
+              value={inputKeyword}
+              onChange={(e) => setInputKeyword(e.target.value)}
+              disabled={generating}
+              className="bg-[#12161A] border border-[#232B33] rounded-xl px-4 py-2.5 text-sm text-[#F5F5F4] placeholder-[#4A5764] focus:outline-none focus:border-orange-500/40 w-full md:w-64 transition-all duration-200"
+            />
+            <button 
+              type="submit"
+              disabled={generating}
+              className="bg-gradient-to-r from-orange-500 to-rose-500 hover:opacity-95 text-white text-xs font-bold px-5 py-3 rounded-xl transition-all duration-200 active:scale-95 whitespace-nowrap shadow-md shadow-orange-500/10"
+            >
+              {generating ? "Generating..." : "Launch Pipeline"}
+            </button>
+          </form>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-1 flex flex-col bg-[#1A2026] border border-[#232B33] rounded-2xl p-5 shadow-xl h-[600px]">
+            <div className="flex justify-between items-center mb-4 pb-2 border-b border-[#232B33]">
+              <h2 className="text-xs font-semibold tracking-wider uppercase text-[#788896]">Campaign History Logs</h2>
+              <span className="text-xs bg-[#12161A] text-[#788896] px-2 py-0.5 rounded-full border border-[#232B33] font-medium">{campaigns.length} tracks</span>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-2.5 pr-1">
+              {loading ? (
+                <div className="h-full flex items-center justify-center text-sm text-[#788896] italic">Syncing database clusters...</div>
+              ) : campaigns.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-center p-4">
+                  <p className="text-sm font-medium text-[#788896]">No Campaigns Found</p>
+                </div>
+              ) : (
+                campaigns.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => {
+                      // Binds the active backend payload to render inside the center container
+                      setSelectedHtml(item.html_content || "");
+                      setTargetKeyword(item.keyword || "Untitled Campaign");
+                    }}
+                    className={`p-4 rounded-xl border transition-all duration-200 cursor-pointer ${
+                      targetKeyword === item.keyword
+                        ? 'bg-gradient-to-br from-orange-500/10 via-rose-500/5 to-transparent border-orange-500/40 shadow-lg'
+                        : 'bg-[#12161A]/50 border-[#232B33] hover:border-[#4A5764]'
+                    }`}
+                  >
+                    <p className={`font-semibold text-sm ${targetKeyword === item.keyword ? 'text-orange-400' : 'text-[#F5F5F4]'}`}>{item.keyword}</p>
+                    <p className="text-[11px] text-[#788896] mt-2 font-mono">🗓️ {item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Recent'}</p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="lg:col-span-2 flex flex-col bg-[#1A2026] border border-[#232B33] rounded-2xl p-6 shadow-xl h-[600px]">
+            <div className="flex justify-between items-center border-b border-[#232B33] pb-4 mb-5">
+              <div className="flex items-center space-x-2">
+                <span className="h-2 w-2 rounded-full bg-rose-500 animate-ping" />
+                <h2 className="text-xs font-semibold tracking-wider uppercase text-rose-400">Workspace Content Preview</h2>
+              </div>
+              <button onClick={handleMcpExport} className="px-5 py-2 text-xs font-bold text-white rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 shadow-md shadow-orange-500/10 hover:opacity-95 active:scale-95 transition-all">
+                <span>🔌 Export via MCP</span>
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto pr-1">
+              {selectedHtml ? (
+                <div className="text-[#D6D3D1] text-sm leading-relaxed space-y-4 max-w-none border border-[#232B33] bg-[#12161A]/40 p-5 rounded-xl font-sans" dangerouslySetInnerHTML={{ __html: selectedHtml }} />
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center text-[#788896] italic text-sm">
+                  Select a campaign from the sidebar history logs to load content canvas.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
