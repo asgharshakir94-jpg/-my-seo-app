@@ -110,7 +110,8 @@ ${JSON.stringify(brief, null, 2)}`
               keyword: keyword,
               content: completeArticle,
               brief: brief || null,
-              unverified_claims: brief?.unverified_claims || null
+              unverified_claims: brief?.unverified_claims || null,
+              status: 'pending_review'
             });
           }
 

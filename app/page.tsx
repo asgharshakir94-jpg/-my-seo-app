@@ -13,6 +13,9 @@ export default function Page() {
   const [generating, setGenerating] = useState<boolean>(false);
   const [email, setEmail] = useState<string>("");
   const [subscribing, setSubscribing] = useState<boolean>(false);
+  const [approving, setApproving] = useState<boolean>(false);
+  const [selectedStatus, setSelectedStatus] = useState<string>("");
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const loadData = async () => {
     try {
@@ -77,6 +80,29 @@ export default function Page() {
       }
     } catch (err) {
       alert("Network transmission error occurred.");
+    }
+  };
+
+  const handleApprove = async () => {
+    if (!selectedId) return;
+    setApproving(true);
+    try {
+      const res = await fetch('/api/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: selectedId })
+      });
+      if (res.ok) {
+        setSelectedStatus('approved');
+        alert("Campaign approved! You can now export it via MCP.");
+        await loadData();
+      } else {
+        alert("Approval failed.");
+      }
+    } catch (err) {
+      alert("Network error during approval.");
+    } finally {
+      setApproving(false);
     }
   };
 
@@ -210,8 +236,10 @@ export default function Page() {
                   <div
                     key={item.id}
                     onClick={() => {
-                      setSelectedHtml(item.html_content || "");
+                      setSelectedHtml(item.html_content || item.content || "");
                       setTargetKeyword(item.keyword || "Untitled Campaign");
+                      setSelectedStatus(item.status || "pending_review");
+                      setSelectedId(item.id);
                     }}
                     className={`p-4 rounded-md border transition-all duration-150 cursor-pointer ${
                       targetKeyword === item.keyword
@@ -219,7 +247,10 @@ export default function Page() {
                         : 'bg-paper border-line hover:border-sand'
                     }`}
                   >
-                    <p className={`font-semibold text-sm ${targetKeyword === item.keyword ? 'text-accent-text' : 'text-ink'}`}>{item.keyword}</p>
+                    <div className="flex justify-between items-start">
+                      <p className={`font-semibold text-sm ${targetKeyword === item.keyword ? 'text-accent-text' : 'text-ink'}`}>{item.keyword}</p>
+                      <span className={`h-2 w-2 rounded-full mt-1 flex-shrink-0 ${item.status === 'approved' ? 'bg-green-500' : 'bg-yellow-500'}`} title={item.status || 'pending_review'} />
+                    </div>
                     <p className="text-[11px] text-sand mt-2 font-mono">{item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Recent'}</p>
                   </div>
                 ))
@@ -230,12 +261,30 @@ export default function Page() {
           <div className="lg:col-span-2 flex flex-col bg-surface border border-line rounded-lg p-4 shadow-flat h-[600px]">
             <div className="flex justify-between items-center border-b border-line pb-4 mb-4">
               <div className="flex items-center space-x-2">
-                <span className="h-2 w-2 rounded-full bg-accent-to" />
-                <h2 className="text-xs font-semibold tracking-wider uppercase text-accent-text">Workspace Content Preview</h2>
+                <span className={`h-2 w-2 rounded-full ${selectedStatus === 'approved' ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                <h2 className="text-xs font-semibold tracking-wider uppercase text-accent-text">
+                  Workspace Content Preview {selectedStatus && `— ${selectedStatus.replace('_', ' ')}`}
+                </h2>
               </div>
-              <button onClick={handleMcpExport} className="px-4 py-2 text-xs font-bold text-white rounded-md bg-gradient-to-r from-accent-from to-accent-to shadow-accent hover:opacity-90 active:scale-95 transition-all">
-                Export via MCP
-              </button>
+              <div className="flex gap-2">
+                {selectedStatus === 'pending_review' && (
+                  <button
+                    onClick={handleApprove}
+                    disabled={approving}
+                    className="px-4 py-2 text-xs font-bold text-white rounded-md bg-yellow-600 hover:opacity-90 active:scale-95 transition-all disabled:opacity-60"
+                  >
+                    {approving ? "Approving..." : "Approve for Export"}
+                  </button>
+                )}
+                <button
+                  onClick={handleMcpExport}
+                  disabled={selectedStatus !== 'approved'}
+                  title={selectedStatus !== 'approved' ? 'Approve this campaign before exporting' : ''}
+                  className="px-4 py-2 text-xs font-bold text-white rounded-md bg-gradient-to-r from-accent-from to-accent-to shadow-accent hover:opacity-90 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Export via MCP
+                </button>
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto pr-1">
