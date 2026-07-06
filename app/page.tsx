@@ -7,6 +7,8 @@ export default function Page() {
   const [selectedHtml, setSelectedHtml] = useState<string>("");
   const [targetKeyword, setTargetKeyword] = useState<string>("");
   const [inputKeyword, setInputKeyword] = useState<string>("");
+  const [inputCity, setInputCity] = useState<string>("");
+  const [inputIndustry, setInputIndustry] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [generating, setGenerating] = useState<boolean>(false);
   const [email, setEmail] = useState<string>("");
@@ -37,10 +39,16 @@ export default function Page() {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ keyword: inputKeyword })
+        body: JSON.stringify({
+          keyword: inputKeyword,
+          city: inputCity.trim() || undefined,
+          industry: inputIndustry.trim() || undefined
+        })
       });
       if (res.ok) {
         setInputKeyword("");
+        setInputCity("");
+        setInputIndustry("");
         alert("Pipeline completed! New article saved directly to database clusters.");
         await loadData();
       } else {
@@ -148,14 +156,30 @@ export default function Page() {
             <h2 className="text-xl font-bold tracking-tight text-ink">RankYou Workspace Dashboard</h2>
             <p className="text-xs text-slate mt-1">Autonomous Optimization Engine Pipeline</p>
           </div>
-          <form onSubmit={handleLaunchPipeline} className="w-full md:w-auto flex items-center gap-2">
+          <form onSubmit={handleLaunchPipeline} className="w-full md:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <input
               type="text"
               placeholder="Enter target keyword..."
               value={inputKeyword}
               onChange={(e) => setInputKeyword(e.target.value)}
               disabled={generating}
-              className="bg-paper border border-line rounded-md px-4 py-2 text-sm text-ink placeholder-sand focus:outline-none focus:ring-2 focus:ring-accent-from/30 focus:border-accent-from w-full md:w-64 transition-all duration-200"
+              className="bg-paper border border-line rounded-md px-4 py-2 text-sm text-ink placeholder-sand focus:outline-none focus:ring-2 focus:ring-accent-from/30 focus:border-accent-from w-full md:w-56 transition-all duration-200"
+            />
+            <input
+              type="text"
+              placeholder="City, Country (optional)"
+              value={inputCity}
+              onChange={(e) => setInputCity(e.target.value)}
+              disabled={generating}
+              className="bg-paper border border-line rounded-md px-4 py-2 text-sm text-ink placeholder-sand focus:outline-none focus:ring-2 focus:ring-accent-from/30 focus:border-accent-from w-full md:w-48 transition-all duration-200"
+            />
+            <input
+              type="text"
+              placeholder="Industry (optional)"
+              value={inputIndustry}
+              onChange={(e) => setInputIndustry(e.target.value)}
+              disabled={generating}
+              className="bg-paper border border-line rounded-md px-4 py-2 text-sm text-ink placeholder-sand focus:outline-none focus:ring-2 focus:ring-accent-from/30 focus:border-accent-from w-full md:w-44 transition-all duration-200"
             />
             <button
               type="submit"

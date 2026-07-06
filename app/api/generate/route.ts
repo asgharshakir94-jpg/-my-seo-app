@@ -2,17 +2,75 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 60; 
 
 import OpenAI from 'openai';
-import { supabaseAdmin } from '@/lib/supabase'; // Connects to your database
+import { supabaseAdmin } from '@/lib/supabase';
+
+const BRIEF_SYSTEM_PROMPT = `You are an SEO content strategist. You generate content briefs for local service businesses in ANY industry and ANY region worldwide. Do not assume a specific industry, country, or measurement system — infer everything from the inputs given.
+
+Given a topic, business type, and location, generate a content brief as a single JSON object — no markdown, no preamble, just raw JSON.
+
+Schema:
+{
+  "topic": string,
+  "location": string,
+  "industry": string,
+  "search_intent": "informational" | "commercial" | "transactional",
+  "title": string (under 60 characters, include the year if relevant),
+  "must_cover_subtopics": string[] (6-10 items),
+  "local_details": string[] (3-5 items — must reflect genuine local factors, would be WRONG if applied elsewhere),
+  "faqs": string[] (3-5 real questions people in this location search),
+  "unverified_claims": string[] (any specific numbers, prices, percentages, or timeframes that should be fact-checked before publishing)
+}
+
+Rules:
+- Never default to US-centric assumptions unless the location is in the US
+- Use metric/local regulatory bodies where appropriate
+- Any specific numeric claim must also appear in unverified_claims
+- Do not include any text outside the JSON object`;
+
+async function generateBrief(openai: OpenAI, keyword: string, city?: string, industry?: string) {
+  const location = city || 'unspecified — infer general best-practice guidance';
+  const businessType = industry || 'unspecified — infer likely industry from the keyword itself';
+
+  const briefResponse = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [
+      { role: 'system', content: BRIEF_SYSTEM_PROMPT },
+      { role: 'user', content: `Topic: ${keyword}\nBusiness type / industry: ${businessType}\nLocation: ${location}` }
+    ],
+    response_format: { type: 'json_object' },
+    temperature: 0.7
+  });
+
+  const brief = JSON.parse(briefResponse.choices[0].message.content || '{}');
+
+  // quality gate — bail out to plain generation if the brief is too thin
+  if (!brief.must_cover_subtopics || brief.must_cover_subtopics.length < 6) {
+    return null;
+  }
+
+  return brief;
+}
 
 export async function POST(req: Request) {
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
   try {
-    const { keyword } = await req.json();
+    const { keyword, city, industry } = await req.json();
 
     if (!keyword) {
       return new Response(JSON.stringify({ error: 'Keyword is required' }), { status: 400 });
     }
+
+    // STEP 1: Generate the brief (cheap, non-streamed call)
+    const brief = await generateBrief(openai, keyword, city, industry);
+
+    // STEP 2: Build the article prompt — brief-driven if available, fallback to plain
+    const articleUserPrompt = brief
+      ? `Write the article using this content brief. Follow it exactly — cover every subtopic, weave in every local detail naturally, and answer every FAQ within the body or a dedicated FAQ section.
+
+Brief:
+${JSON.stringify(brief, null, 2)}`
+      : `Execute an end-to-end autonomous content optimization sprint for the keyword: "${keyword}".`;
 
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -28,16 +86,13 @@ export async function POST(req: Request) {
           3. Weave highly relevant latent semantic indexing (LSI) terms naturally throughout the narrative.
           4. Ensure an immediate, engaging hook in the introduction followed by highly actionable, clear structural subsections.` 
         },
-        { 
-          role: 'user', 
-          content: `Execute an end-to-end autonomous content optimization sprint for the keyword: "${keyword}".` 
-        }
+        { role: 'user', content: articleUserPrompt }
       ],
       stream: true,
     });
 
     const encoder = new TextEncoder();
-    let completeArticle = ''; // Collects the text to save in your database later
+    let completeArticle = '';
 
     const stream = new ReadableStream({
       async start(controller) {
@@ -45,16 +100,17 @@ export async function POST(req: Request) {
           for await (const chunk of response) {
             const text = chunk.choices?.[0]?.delta?.content || '';
             if (text) {
-              completeArticle += text; // Saves the text piece by piece
+              completeArticle += text;
               controller.enqueue(encoder.encode(text));
             }
           }
           
-          // Article finished streaming! Save it into Supabase now:
           if (completeArticle) {
             await supabaseAdmin.from('campaigns').insert({
               keyword: keyword,
-              content: completeArticle
+              content: completeArticle,
+              brief: brief || null,
+              unverified_claims: brief?.unverified_claims || null
             });
           }
 
