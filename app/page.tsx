@@ -38,6 +38,11 @@ export default function Page() {
     e.preventDefault();
     if (!inputKeyword.trim()) return alert("Please enter a target keyword first!");
     setGenerating(true);
+    setSelectedHtml("");
+    setSelectedStatus("");
+    setSelectedId(null);
+    setTargetKeyword(inputKeyword);
+  
     try {
       const res = await fetch('/api/generate', {
         method: 'POST',
@@ -48,15 +53,40 @@ export default function Page() {
           industry: inputIndustry.trim() || undefined
         })
       });
-      if (res.ok) {
-        setInputKeyword("");
-        setInputCity("");
-        setInputIndustry("");
-        alert("Pipeline completed! New article saved directly to database clusters.");
-        await loadData();
-      } else {
+  
+      if (!res.ok || !res.body) {
         alert("Pipeline failed. Ensure your OpenAI configuration keys are loaded.");
+        setGenerating(false);
+        return;
       }
+  
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let fullText = '';
+  
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        fullText += decoder.decode(value, { stream: true });
+        setSelectedHtml(fullText); // live-updates the workspace preview as it streams
+      }
+  
+      setInputKeyword("");
+      setInputCity("");
+      setInputIndustry("");
+  
+      // refresh sidebar list, then auto-select the newly created campaign
+      const historyRes = await fetch('/api/history');
+      const historyData = await historyRes.json();
+      if (Array.isArray(historyData)) {
+        setCampaigns(historyData);
+        const newest = historyData[0]; // assumes /api/history sorts by created_at desc
+        if (newest) {
+          setSelectedId(newest.id);
+          setSelectedStatus(newest.status || 'pending_review');
+        }
+      }
+  
     } catch (err) {
       alert("Network compilation timeout occurred during generation cycle.");
     } finally {

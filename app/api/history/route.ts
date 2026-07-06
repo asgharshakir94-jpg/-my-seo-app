@@ -11,22 +11,21 @@ export async function GET() {
     }
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
     
-    // We select ONLY the true columns that exist in your Supabase table screenshot
     const { data: campaigns, error } = await supabase
       .from('campaigns')
-      .select('id, keyword, created_at, content') 
+      .select('id, keyword, created_at, content, status') 
       .order('created_at', { ascending: false });
 
     if (error) {
       return NextResponse.json({ error: `Supabase database error: ${error.message}` }, { status: 500 });
     }
 
-    // This dynamically maps your true 'content' database text to match what the frontend reads
     const formattedCampaigns = campaigns?.map(item => ({
       id: item.id,
       keyword: item.keyword,
       created_at: item.created_at,
-      html_content: item.content || "" 
+      html_content: item.content || "",
+      status: item.status || "pending_review"
     }));
 
     return NextResponse.json(formattedCampaigns || []);
