@@ -1,26 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap');
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  --color-paper: #EFE7D6;
+  --color-surface: #FFFFFF;
+  --color-line: #E8E3DC;
+  --color-ink: #1C1B1A;
+  --color-slate: #786F63;
+  --color-sand: #A39C93;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-accent-from: #2F6E4F;
+  --color-accent-to: #2F6E4F;
+  --color-accent-soft: #E9F1EC;
+  --color-accent-text: #1F5138;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-hand: 'Caveat', cursive;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  --shadow-flat: 0 1px 2px 0 rgba(28, 27, 26, 0.04);
+  --shadow-raised: 0 4px 12px 0 rgba(28, 27, 26, 0.08);
+  --shadow-accent: 0 1px 8px 0 rgba(249, 115, 22, 0.20);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-paper);
+  color: var(--color-ink);
   font-family: Arial, Helvetica, sans-serif;
 }
