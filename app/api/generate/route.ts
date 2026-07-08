@@ -90,7 +90,7 @@ ${JSON.stringify(brief, null, 2)}`
         { role: 'user', content: articleUserPrompt }
       ],
       stream: true,
-      max_tokens: 2000,
+      max_completion_tokens: 2000,
     });
 
     const encoder = new TextEncoder();
