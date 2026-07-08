@@ -308,7 +308,7 @@ export default function Page() {
                 )}
                 <button
                 onClick={handleMcpExport}
-                className="px-4 py-2 text-xs font-bold text-white rounded-md bg-gra..."
+                className="px-4 py-2 text-xs font-bold text-white rounded-md bg-green-600 hover:opacity-90 active:scale-95 transition-all"
                 >
                 Export via MCP
                 </button>
