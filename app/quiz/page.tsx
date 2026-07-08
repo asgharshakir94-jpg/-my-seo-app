@@ -98,7 +98,7 @@ export default function QuizPage() {
             })}
           </ul>
           <div className="mt-6 pt-4 border-t border-line text-xs text-slate font-mono">
-            engine: gpt-4o-mini · status: {visibleSteps >= SCAN_STEPS.length ? 'ready' : 'running'}
+            engine: gpt-5-mini · status: {visibleSteps >= SCAN_STEPS.length ? 'ready' : 'running'}
           </div>
         </div>
 

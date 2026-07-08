@@ -177,7 +177,7 @@ export default function Page() {
           </div>
 
           <div className="text-xs text-slate font-mono bg-surface px-3 py-2 rounded-md border border-line">
-            Engine Status: <span className="text-accent-text font-semibold">gpt-4o-mini Live</span>
+            Engine Status: <span className="text-accent-text font-semibold">gpt-5-mini Live</span>
           </div>
         </div>
       </nav>
@@ -307,12 +307,10 @@ export default function Page() {
                   </button>
                 )}
                 <button
-                  onClick={handleMcpExport}
-                  disabled={selectedStatus !== 'approved'}
-                  title={selectedStatus !== 'approved' ? 'Approve this campaign before exporting' : ''}
-                  className="px-4 py-2 text-xs font-bold text-white rounded-md bg-gradient-to-r from-accent-from to-accent-to shadow-accent hover:opacity-90 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                onClick={handleMcpExport}
+                className="px-4 py-2 text-xs font-bold text-white rounded-md bg-gra..."
                 >
-                  Export via MCP
+                Export via MCP
                 </button>
               </div>
             </div>

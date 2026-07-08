@@ -15,7 +15,7 @@ Schema:
   "industry": string,
   "search_intent": "informational" | "commercial" | "transactional",
   "title": string (under 60 characters, include the year if relevant),
-  "must_cover_subtopics": string[] (6-10 items),
+  "must_cover_subtopics": string[] (4-6 items),
   "local_details": string[] (3-5 items — must reflect genuine local factors, would be WRONG if applied elsewhere),
   "faqs": string[] (3-5 real questions people in this location search),
   "unverified_claims": string[] (any specific numbers, prices, percentages, or timeframes that should be fact-checked before publishing)
@@ -25,26 +25,26 @@ Rules:
 - Never default to US-centric assumptions unless the location is in the US
 - Use metric/local regulatory bodies where appropriate
 - Any specific numeric claim must also appear in unverified_claims
-- Do not include any text outside the JSON object`;
+- Do not include any text outside the JSON object
+- Keep the brief lean — this brief controls final article length, so favor fewer, higher-value items over exhaustive coverage`;
 
 async function generateBrief(openai: OpenAI, keyword: string, city?: string, industry?: string) {
   const location = city || 'unspecified — infer general best-practice guidance';
   const businessType = industry || 'unspecified — infer likely industry from the keyword itself';
 
   const briefResponse = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'gpt-5-mini',
     messages: [
       { role: 'system', content: BRIEF_SYSTEM_PROMPT },
       { role: 'user', content: `Topic: ${keyword}\nBusiness type / industry: ${businessType}\nLocation: ${location}` }
     ],
-    response_format: { type: 'json_object' },
-    temperature: 0.7
-  });
+    response_format: { type: 'json_object' }
+    });
 
   const brief = JSON.parse(briefResponse.choices[0].message.content || '{}');
 
   // quality gate — bail out to plain generation if the brief is too thin
-  if (!brief.must_cover_subtopics || brief.must_cover_subtopics.length < 6) {
+  if (!brief.must_cover_subtopics || brief.must_cover_subtopics.length < 4) {
     return null;
   }
 
@@ -73,7 +73,7 @@ ${JSON.stringify(brief, null, 2)}`
       : `Execute an end-to-end autonomous content optimization sprint for the keyword: "${keyword}".`;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-5-mini',
       messages: [
         { 
           role: 'system', 
@@ -84,11 +84,13 @@ ${JSON.stringify(brief, null, 2)}`
           1. Format everything in semantic, elegant HTML structures (use <h2>, <h3>, <p>, <strong>, <em>, <ul>, and <li>).
           2. NEVER wrap your code output in markdown backticks (e.g., do not use \`\`\`html ... \`\`\`). Output pure text strings containing the HTML tags directly.
           3. Weave highly relevant latent semantic indexing (LSI) terms naturally throughout the narrative.
-          4. Ensure an immediate, engaging hook in the introduction followed by highly actionable, clear structural subsections.` 
+          4. Ensure an immediate, engaging hook in the introduction followed by highly actionable, clear structural subsections.
+          5. Target 900-1200 words total. Do not exceed 1400 words under any circumstances. Prioritize clarity and actionable value over exhaustive coverage — cut anything that doesn't directly help the reader.` 
         },
         { role: 'user', content: articleUserPrompt }
       ],
       stream: true,
+      max_tokens: 2000,
     });
 
     const encoder = new TextEncoder();
@@ -106,13 +108,14 @@ ${JSON.stringify(brief, null, 2)}`
           }
           
           if (completeArticle) {
-            await supabaseAdmin.from('campaigns').insert({
-              keyword: keyword,
-              content: completeArticle,
-              brief: brief || null,
-              unverified_claims: brief?.unverified_claims || null,
-              status: 'pending_review'
-            });
+            await supabaseAdmin
+              .from('campaigns')
+              .update({
+                content: completeArticle,
+                brief: brief || null,
+                unverified_claims: brief?.unverified_claims || null,
+                })
+              .eq('keyword', keyword);
           }
 
         } catch (err) {
