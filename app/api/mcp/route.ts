@@ -1,7 +1,15 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(request: Request) {
   try {
+    const supabaseSession = await createClient();
+    const { data: { user } } = await supabaseSession.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
+
     const { keyword, html_content } = await request.json();
 
     if (!keyword || !html_content) {
@@ -9,13 +17,12 @@ export async function POST(request: Request) {
     }
 
     const token = process.env.CMS_API_TOKEN;
-    const collectionId = '6a490b7687e679d5400a4e4b'; // Verified Collection ID from Webflow dashboard // Verified Collection ID from Webflow dashboard
+    const collectionId = '6a490b7687e679d5400a4e4b';
 
     if (!token) {
       return NextResponse.json({ error: 'CMS_API_TOKEN variable is not injected into Vercel settings' }, { status: 500 });
     }
 
-    // Connects out dynamically via standard fetch to Webflow's remote database layout
     const response = await fetch(`https://api.webflow.com/v2/collections/${collectionId}/items`, {
       method: 'POST',
       headers: {
@@ -23,7 +30,6 @@ export async function POST(request: Request) {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-    
       body: JSON.stringify({
         isArchived: false,
         isDraft: true, 
@@ -36,7 +42,6 @@ export async function POST(request: Request) {
     });
 
     const data = await response.json();
-    
 
     if (!response.ok) {
       return NextResponse.json({ error: 'Webflow pipeline refused authentication', details: data }, { status: response.status });

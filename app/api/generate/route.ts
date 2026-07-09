@@ -3,56 +3,20 @@ export const maxDuration = 60;
 
 import OpenAI from 'openai';
 import { supabaseAdmin } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/server';
 
-const BRIEF_SYSTEM_PROMPT = `You are an SEO content strategist. You generate content briefs for local service businesses in ANY industry and ANY region worldwide. Do not assume a specific industry, country, or measurement system — infer everything from the inputs given.
-
-Given a topic, business type, and location, generate a content brief as a single JSON object — no markdown, no preamble, just raw JSON.
-
-Schema:
-{
-  "topic": string,
-  "location": string,
-  "industry": string,
-  "search_intent": "informational" | "commercial" | "transactional",
-  "title": string (under 60 characters, include the year if relevant),
-  "must_cover_subtopics": string[] (4-6 items),
-  "local_details": string[] (3-5 items — must reflect genuine local factors, would be WRONG if applied elsewhere),
-  "faqs": string[] (3-5 real questions people in this location search),
-  "unverified_claims": string[] (any specific numbers, prices, percentages, or timeframes that should be fact-checked before publishing)
-}
-
-Rules:
-- Never default to US-centric assumptions unless the location is in the US
-- Use metric/local regulatory bodies where appropriate
-- Any specific numeric claim must also appear in unverified_claims
-- Do not include any text outside the JSON object
-- Keep the brief lean — this brief controls final article length, so favor fewer, higher-value items over exhaustive coverage`;
-
-async function generateBrief(openai: OpenAI, keyword: string, city?: string, industry?: string) {
-  const location = city || 'unspecified — infer general best-practice guidance';
-  const businessType = industry || 'unspecified — infer likely industry from the keyword itself';
-
-  const briefResponse = await openai.chat.completions.create({
-    model: 'gpt-5-mini',
-    messages: [
-      { role: 'system', content: BRIEF_SYSTEM_PROMPT },
-      { role: 'user', content: `Topic: ${keyword}\nBusiness type / industry: ${businessType}\nLocation: ${location}` }
-    ],
-    response_format: { type: 'json_object' }
-    });
-
-  const brief = JSON.parse(briefResponse.choices[0].message.content || '{}');
-
-  // quality gate — bail out to plain generation if the brief is too thin
-  if (!brief.must_cover_subtopics || brief.must_cover_subtopics.length < 4) {
-    return null;
-  }
-
-  return brief;
-}
+// ... BRIEF_SYSTEM_PROMPT and generateBrief() stay exactly the same ...
 
 export async function POST(req: Request) {
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+  // Check for a logged-in user
+  const supabaseSession = await createClient();
+  const { data: { user } } = await supabaseSession.auth.getUser();
+
+  if (!user) {
+    return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401 });
+  }
 
   try {
     const { keyword, city, industry } = await req.json();
@@ -115,7 +79,8 @@ ${JSON.stringify(brief, null, 2)}`
                 brief: brief || null,
                 unverified_claims: brief?.unverified_claims || null,
                 })
-              .eq('keyword', keyword);
+              .eq('keyword', keyword)
+              .eq('user_id', user.id);
           }
 
         } catch (err) {

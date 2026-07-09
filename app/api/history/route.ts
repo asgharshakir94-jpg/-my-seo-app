@@ -1,19 +1,13 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+import { createClient } from '@/lib/supabase/server';
 
 export async function GET() {
   try {
-    if (!supabaseUrl || !supabaseAnonKey) {
-      return NextResponse.json({ error: "Server credentials missing inside environment variables" }, { status: 500 });
-    }
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
-    
+    const supabase = await createClient();
+
     const { data: campaigns, error } = await supabase
       .from('campaigns')
-      .select('id, keyword, created_at, content, status') 
+      .select('id, keyword, created_at, content, status')
       .order('created_at', { ascending: false });
 
     if (error) {
