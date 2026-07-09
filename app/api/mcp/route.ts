@@ -36,6 +36,7 @@ export async function POST(request: Request) {
     });
 
     const data = await response.json();
+    console.log('WEBFLOW RAW RESPONSE:', JSON.stringify(data, null, 2));
 
     if (!response.ok) {
       return NextResponse.json({ error: 'Webflow pipeline refused authentication', details: data }, { status: response.status });
