@@ -41,7 +41,7 @@ ${JSON.stringify(brief, null, 2)}`
       messages: [
         { 
           role: 'system', 
-          content: `You are RankYou's elite Autonomous SEO Campaign Pipeline. 
+          content: `You are RankinSEO's elite Autonomous SEO Campaign Pipeline. 
           Your mission is to write a highly authoritative, publication-ready, deeply optimized article targeting the user's primary keyword.
           
           CRITICAL WRITING RULES:

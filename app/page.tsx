@@ -36,7 +36,7 @@ export default function Page() {
           <div className="flex items-center space-x-2">
             <span className="h-2.5 w-2.5 rounded-full bg-gradient-to-r from-accent-from to-accent-to shadow-accent" />
             <span className="font-bold tracking-tight text-lg text-ink">
-              RankYou <span className="text-sand font-medium">Project Platform</span>
+              RankinSEO <span className="text-sand font-medium">Project Platform</span>
             </span>
           </div>
 
@@ -60,14 +60,14 @@ export default function Page() {
             Publish SEO content while<br />you focus on everything else.
           </h1>
           <p className="mt-4 text-lg text-slate max-w-2xl">
-            RankYou researches keywords, drafts optimized articles, and pushes them
+            RankinSEO researches keywords, drafts optimized articles, and pushes them
             straight to your CMS — so your traffic keeps growing without you
             touching a keyboard.
           </p>
           <div className="mt-6 flex items-center gap-4">
-            <Link href="/dashboard">
+            <Link href="/quiz">
               <button className="px-8 py-4 bg-black text-white rounded-md font-medium text-base">
-                Get Traffic on Robotic Pilot
+                Start Ranking
               </button>
             </Link>
 
@@ -81,7 +81,7 @@ export default function Page() {
         <div className="bg-surface border border-line rounded-lg p-6 shadow-flat">
           <h2 className="text-lg font-bold text-ink mb-1">Get notified about new features</h2>
           <p className="text-sm text-slate mb-4">
-            Join other site owners getting updates on RankYou.
+            Join other site owners getting updates on RankinSEO.
           </p>
           <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2">
             <input

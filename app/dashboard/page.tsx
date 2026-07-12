@@ -150,7 +150,7 @@ export default function DashboardPage() {
           <Link href="/" className="flex items-center space-x-2">
             <span className="h-2.5 w-2.5 rounded-full bg-gradient-to-r from-accent-from to-accent-to shadow-accent" />
             <span className="font-bold tracking-tight text-lg text-ink">
-              RankYou <span className="text-sand font-medium">Project Platform</span>
+              RankinSEO <span className="text-sand font-medium">Project Platform</span>
             </span>
           </Link>
 
@@ -176,7 +176,7 @@ export default function DashboardPage() {
 
         <div className="bg-surface border border-line rounded-lg p-4 shadow-flat flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h2 className="text-xl font-bold tracking-tight text-ink">RankYou Workspace Dashboard</h2>
+            <h2 className="text-xl font-bold tracking-tight text-ink">RankinSEO Workspace Dashboard</h2>
             <p className="text-xs text-slate mt-1">Autonomous Optimization Engine Pipeline</p>
           </div>
           <form onSubmit={handleLaunchPipeline} className="w-full md:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2">

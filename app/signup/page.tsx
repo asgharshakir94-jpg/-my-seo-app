@@ -35,7 +35,7 @@ export default function SignupPage() {
         <div className="flex items-center justify-center space-x-2 mb-8">
           <span className="h-2.5 w-2.5 rounded-full bg-gradient-to-r from-accent-from to-accent-to shadow-accent" />
           <span className="font-bold tracking-tight text-lg text-ink">
-            RankYou <span className="text-sand font-medium">Project Platform</span>
+            RankinSEO <span className="text-sand font-medium">Project Platform</span>
           </span>
         </div>
 

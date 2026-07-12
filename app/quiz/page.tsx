@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 const SCAN_STEPS = [
   'Crawling site structure',
@@ -19,13 +20,16 @@ export default function QuizPage() {
     return () => clearTimeout(timer);
   }, [visibleSteps]);
 
+  const router = useRouter();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    console.log('Website URL submitted:', url);
-    setSubmitting(false);
+    // wait for the scan animation to finish before moving on
+    setTimeout(() => {
+      router.push(`/plan?url=${encodeURIComponent(url)}`);
+    }, SCAN_STEPS.length * 500 + 300);
   };
-
   return (
     <div className="min-h-screen bg-paper flex items-center justify-center px-4 py-16">
       <div className="max-w-4xl w-full grid md:grid-cols-2 gap-12 items-center">
