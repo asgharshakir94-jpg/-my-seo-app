@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import { FeaturesSection } from '@/components/FeaturesSection';
 
 export default function Page() {
   const [email, setEmail] = useState<string>("");
@@ -77,7 +78,7 @@ export default function Page() {
             </button>
           </div>
         </div>
-
+        <FeaturesSection />
         <div className="bg-surface border border-line rounded-lg p-6 shadow-flat">
           <h2 className="text-lg font-bold text-ink mb-1">Get notified about new features</h2>
           <p className="text-sm text-slate mb-4">
