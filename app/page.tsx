@@ -2,7 +2,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { FeaturesSection } from '@/components/FeaturesSection';
-
+import PricingSection from "@/components/PricingSection";
+import FAQSection from "@/components/FAQSection";
 export default function Page() {
   const [email, setEmail] = useState<string>("");
   const [subscribing, setSubscribing] = useState<boolean>(false);
@@ -79,6 +80,8 @@ export default function Page() {
           </div>
         </div>
         <FeaturesSection />
+        <PricingSection />
+        <FAQSection />
         <div className="bg-surface border border-line rounded-lg p-6 shadow-flat">
           <h2 className="text-lg font-bold text-ink mb-1">Get notified about new features</h2>
           <p className="text-sm text-slate mb-4">
