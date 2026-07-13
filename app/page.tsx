@@ -92,7 +92,7 @@ export default function Page() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={subscribing}
-              className="flex-1 px-4 py-2 border border-line rounded-md text-ink bg-paper placeholder-sand focus:outline-none focus:ring-2 focus:ring-accent-from/30 focus:border-accent-from"
+             className="flex-1 px-4 py-2 border-2 border-ink/50 rounded-md text-ink bg-paper placeholder-sand shadow-md focus:outline-none focus:ring-2 focus:ring-accent-from/30 focus:border-accent-from"
             />
             <button
               type="submit"
