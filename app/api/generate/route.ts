@@ -5,12 +5,48 @@ import OpenAI from 'openai';
 import { supabaseAdmin } from '@/lib/supabase';
 import { createClient } from '@/lib/supabase/server';
 
-// ... BRIEF_SYSTEM_PROMPT and generateBrief() stay exactly the same ...
+const BRIEF_SYSTEM_PROMPT = `You are an SEO research assistant. Given a target keyword (and optional city/industry context), produce a structured content brief as raw JSON only — no markdown, no backticks, no commentary.
+
+The JSON must have this exact shape:
+{
+  "must_cover_subtopics": string[],   // 4-7 key subtopics the article must address
+  "local_details": string[],          // specific local facts/details to weave in, empty array if no city given
+  "faqs": string[],                   // 3-5 real questions readers would ask about this topic
+  "unverified_claims": string[]       // any statistic or claim that would need a citation/fact-check, empty array if none
+}
+
+Return ONLY the JSON object, nothing else.`;
+
+async function generateBrief(
+  openai: OpenAI,
+  keyword: string,
+  city?: string,
+  industry?: string
+) {
+  try {
+    const userPrompt = `Keyword: "${keyword}"${city ? `\nCity: ${city}` : ''}${industry ? `\nIndustry: ${industry}` : ''}`;
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-5-mini',
+      messages: [
+        { role: 'system', content: BRIEF_SYSTEM_PROMPT },
+        { role: 'user', content: userPrompt },
+      ],
+      max_completion_tokens: 800,
+    });
+
+    const raw = response.choices?.[0]?.message?.content || '';
+    const cleaned = raw.replace(/```json|```/g, '').trim();
+    return JSON.parse(cleaned);
+  } catch (err) {
+    console.error('generateBrief failed, falling back to no-brief mode:', err);
+    return null;
+  }
+}
 
 export async function POST(req: Request) {
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-  // Check for a logged-in user
   const supabaseSession = await createClient();
   const { data: { user } } = await supabaseSession.auth.getUser();
 
@@ -25,10 +61,8 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ error: 'Keyword is required' }), { status: 400 });
     }
 
-    // STEP 1: Generate the brief (cheap, non-streamed call)
     const brief = await generateBrief(openai, keyword, city, industry);
 
-    // STEP 2: Build the article prompt — brief-driven if available, fallback to plain
     const articleUserPrompt = brief
       ? `Write the article using this content brief. Follow it exactly — cover every subtopic, weave in every local detail naturally, and answer every FAQ within the body or a dedicated FAQ section.
 
