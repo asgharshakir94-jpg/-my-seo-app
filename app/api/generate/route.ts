@@ -63,6 +63,40 @@ export async function POST(req: Request) {
 
     const brief = await generateBrief(openai, keyword, city, industry);
 
+    // STEP 1.5: Create (or reuse) the campaign row up front
+    let campaignRow;
+    const { data: inserted, error: insertError } = await supabaseAdmin
+      .from('campaigns')
+      .insert({
+        keyword,
+        status: 'pending_review',
+        brief: brief || null,
+        unverified_claims: brief?.unverified_claims || null,
+        user_id: user.id,
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      // If it failed because the keyword already exists, reuse that row instead
+      if (insertError.code === '23505') {
+        const { data: existing, error: fetchError } = await supabaseAdmin
+          .from('campaigns')
+          .select()
+          .eq('keyword', keyword)
+          .single();
+
+        if (fetchError || !existing) {
+          return new Response(JSON.stringify({ error: 'Keyword exists but could not be loaded' }), { status: 500 });
+        }
+        campaignRow = existing;
+      } else {
+        return new Response(JSON.stringify({ error: insertError.message }), { status: 500 });
+      }
+    } else {
+      campaignRow = inserted;
+    }
+
     const articleUserPrompt = brief
       ? `Write the article using this content brief. Follow it exactly — cover every subtopic, weave in every local detail naturally, and answer every FAQ within the body or a dedicated FAQ section.
 
@@ -108,13 +142,8 @@ ${JSON.stringify(brief, null, 2)}`
           if (completeArticle) {
             await supabaseAdmin
               .from('campaigns')
-              .update({
-                content: completeArticle,
-                brief: brief || null,
-                unverified_claims: brief?.unverified_claims || null,
-                })
-              .eq('keyword', keyword)
-              .eq('user_id', user.id);
+              .update({ content: completeArticle })
+              .eq('id', campaignRow.id);
           }
 
         } catch (err) {
