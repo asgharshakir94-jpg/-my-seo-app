@@ -154,10 +154,10 @@ export default function DashboardPage() {
             </span>
           </Link>
           <div className="flex items-center gap-6">
-          <Link href="/" className="text-sm font-medium text-ink/70 hover:text-ink transition-colors">
+          <Link href="/" className="text-lg font-medium text-ink/70 hover:text-ink transition-colors">
           Home
           </Link>
-          <Link href="/#pricing" className="text-sm font-medium text-ink/70 hover:text-ink transition-colors">
+          <Link href="/#pricing" className="text-lg font-medium text-ink/70 hover:text-ink transition-colors">
           Pricing
           </Link>
           </div>
