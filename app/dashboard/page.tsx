@@ -153,8 +153,17 @@ export default function DashboardPage() {
               RankinSEO <span className="text-sand font-medium">Project Platform</span>
             </span>
           </Link>
-
+          <div className="flex items-center gap-6">
+          <Link href="/" className="text-xs font-medium text-ink/70 hover:text-ink transition-colors">
+          Home
+          </Link>
+          <Link href="/#pricing" className="text-xs font-medium text-ink/70 hover:text-ink transition-colors">
+          Pricing
+          </Link>
+          </div>
           <div className="flex items-center gap-3">
+          
+
             <div className="text-xs text-slate font-mono bg-surface px-3 py-2 rounded-md border border-line">
               Engine Status: <span className="text-accent-text font-semibold">gpt-5-mini Live</span>
             </div>

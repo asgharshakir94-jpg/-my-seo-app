@@ -49,10 +49,13 @@ export default function Page() {
           <a href="#faq" className="hover:text-ink transition-colors">FAQ</a>
           <Link href="/contact" className="hover:text-ink transition-colors">Contact</Link>
           </nav> 
+          <Link href="/login" className="text-sm font-medium text-ink/80 hover:text-ink transition-colors">
+          Log In
+          </Link>
           <Link href="/dashboard">
-            <button className="text-xs font-bold text-white bg-gradient-to-r from-accent-from to-accent-to rounded-md px-4 py-2 hover:opacity-90 active:scale-95 transition-all duration-200 shadow-accent">
-              Open Dashboard
-            </button>
+          <button className="text-xs font-bold text-wh...">
+          Open Dashboard
+          </button>
           </Link>
         </div>
       </nav>
