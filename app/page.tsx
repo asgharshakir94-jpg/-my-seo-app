@@ -42,13 +42,13 @@ export default function Page() {
               RankinSEO <span className="text-sand font-medium">Project Platform</span>
             </span>
           </div>
-
-          <div className="hidden md:flex items-center space-x-6 text-sm font-medium text-slate">
-            <a href="#" className="hover:text-ink transition-colors">What's Inside</a>
-            <a href="#" className="hover:text-ink transition-colors">Pricing</a>
-            <a href="#" className="hover:text-ink transition-colors">FAQ</a>
-          </div>
-
+          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium text-ink/80">
+          <a href="#features" className="hover:text-ink transition-colors">What's Inside</a>
+          <a href="#case-studies" className="hover:text-ink transition-colors">Case Studies</a>
+          <a href="#pricing" className="hover:text-ink transition-colors">Pricing</a>
+          <a href="#faq" className="hover:text-ink transition-colors">FAQ</a>
+          <Link href="/contact" className="hover:text-ink transition-colors">Contact</Link>
+          </nav> 
           <Link href="/dashboard">
             <button className="text-xs font-bold text-white bg-gradient-to-r from-accent-from to-accent-to rounded-md px-4 py-2 hover:opacity-90 active:scale-95 transition-all duration-200 shadow-accent">
               Open Dashboard

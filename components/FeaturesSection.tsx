@@ -1,6 +1,6 @@
 export function FeaturesSection() {
     return (
-      <section className="bg-paper px-6 py-24">
+        <section id="features" className="bg-paper px-6 py-24">
         <div className="mx-auto max-w-6xl text-center">
           <p className="text-sm font-medium tracking-widest text-accent uppercase">
             Engineered for Authority

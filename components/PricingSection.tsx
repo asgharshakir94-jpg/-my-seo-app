@@ -41,7 +41,7 @@ const plans = [
 
 export default function PricingSection() {
   return (
-    <section className="max-w-7xl mx-auto p-4 md:p-8">
+    <section id="pricing" className="max-w-7xl mx-auto p-4 md:p-8">
       <div className="text-center mb-16">
         <span className="inline-block px-4 py-1 rounded-full border border-line text-sm text-ink/70 mb-6">
           Simple, Transparent Pricing

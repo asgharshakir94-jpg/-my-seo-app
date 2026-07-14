@@ -35,7 +35,7 @@ const trafficBars = [30, 42, 38, 58, 70, 62, 85];
 
 export default function CaseStudiesSection() {
   return (
-    <section className="max-w-7xl mx-auto p-4 md:p-8">
+    <section id="case-studies" className="max-w-7xl mx-auto p-4 md:p-8">
       {/* Header */}
       <div className="mb-12">
         <span className="text-sm font-semibold tracking-wide text-ink/60 mb-3 block">
