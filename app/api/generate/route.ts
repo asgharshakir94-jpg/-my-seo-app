@@ -1,5 +1,5 @@
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60; 
+export const maxDuration = 120;
 
 import OpenAI from 'openai';
 import { supabaseAdmin } from '@/lib/supabase';
@@ -43,7 +43,7 @@ async function scoreArticleRisk(openai: OpenAI, articleHtml: string) {
         { role: 'system', content: RISK_SYSTEM_PROMPT },
         { role: 'user', content: articleHtml },
       ],
-      max_completion_tokens: 1500,
+      max_completion_tokens: 1000,
     });
 
     const raw = response.choices?.[0]?.message?.content || '';
@@ -182,20 +182,38 @@ ${JSON.stringify(brief, null, 2)}`
           }
           
           if (completeArticle) {
-            const RISK_THRESHOLD = 30; // tune after reviewing real score distribution
-            const riskResult = await scoreArticleRisk(openai, completeArticle);
-            const finalStatus =
-              riskResult.risk_score < RISK_THRESHOLD ? 'approved' : 'pending_review';
-
+            // STEP A: Save the article immediately with a safe default status.
+            // This must happen no matter what — even if risk scoring below
+            // times out or fails, the article is never lost.
             await supabaseAdmin
               .from('campaigns')
               .update({
                 content: completeArticle,
-                status: finalStatus,
-                risk_score: riskResult.risk_score,
-                risk_flags: riskResult.flags,
+                status: 'pending_review',
               })
               .eq('id', campaignRow.id);
+
+            // STEP B: Best-effort risk scoring. If this is slow, errors, or
+            // the function gets cut off, the article above is already safe
+            // and sitting in pending_review for manual approval.
+            try {
+              const RISK_THRESHOLD = 30; // tune after reviewing real score distribution
+              const riskResult = await scoreArticleRisk(openai, completeArticle);
+              const finalStatus =
+                riskResult.risk_score < RISK_THRESHOLD ? 'approved' : 'pending_review';
+
+              await supabaseAdmin
+                .from('campaigns')
+                .update({
+                  status: finalStatus,
+                  risk_score: riskResult.risk_score,
+                  risk_flags: riskResult.flags,
+                })
+                .eq('id', campaignRow.id);
+            } catch (riskErr) {
+              console.error('Risk scoring step failed after content was already saved:', riskErr);
+              // No-op: row is already saved as pending_review, safe to leave as-is.
+            }
           }
 
         } catch (err) {
