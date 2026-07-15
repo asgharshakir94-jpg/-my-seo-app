@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { supabaseAdmin } from '@/lib/supabase';
 
 export async function POST(request: Request) {
   try {
@@ -10,10 +11,33 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const { keyword, html_content } = await request.json();
+    const { campaignId, keyword, html_content } = await request.json();
 
-    if (!keyword || !html_content) {
-      return NextResponse.json({ error: 'Missing keyword or html_content' }, { status: 400 });
+    if (!campaignId || !keyword || !html_content) {
+      return NextResponse.json({ error: 'Missing campaignId, keyword, or html_content' }, { status: 400 });
+    }
+
+    // Server-side gate: never trust client-reported status. Look the campaign
+    // up directly and refuse export unless it's actually been approved.
+    const { data: campaign, error: fetchError } = await supabaseAdmin
+      .from('campaigns')
+      .select('status, user_id')
+      .eq('id', campaignId)
+      .single();
+
+    if (fetchError || !campaign) {
+      return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+    }
+
+    if (campaign.user_id !== user.id) {
+      return NextResponse.json({ error: 'Not authorized for this campaign' }, { status: 403 });
+    }
+
+    if (campaign.status !== 'approved') {
+      return NextResponse.json(
+        { error: `Campaign must be approved before export (current status: ${campaign.status})` },
+        { status: 403 }
+      );
     }
 
     const token = process.env.CMS_API_TOKEN;
@@ -46,6 +70,11 @@ export async function POST(request: Request) {
     if (!response.ok) {
       return NextResponse.json({ error: 'Webflow pipeline refused authentication', details: data }, { status: response.status });
     }
+
+    await supabaseAdmin
+      .from('campaigns')
+      .update({ status: 'exported' })
+      .eq('id', campaignId);
 
     return NextResponse.json({ success: true, message: 'Draft exported cleanly via MCP!', data });
     

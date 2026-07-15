@@ -5,6 +5,13 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
 export default function DashboardPage() {
+  const statusColor = (status: string) => {
+    if (status === 'exported') return 'bg-purple-500';
+    if (status === 'approved') return 'bg-green-500';
+    if (status === 'generating') return 'bg-blue-500 animate-pulse';
+    return 'bg-yellow-500'; // pending_review or unknown
+  };
+
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [selectedHtml, setSelectedHtml] = useState<string>("");
   const [targetKeyword, setTargetKeyword] = useState<string>("");
@@ -102,16 +109,18 @@ export default function DashboardPage() {
   };
 
   const handleMcpExport = async () => {
-    if (!selectedHtml) return alert("Select a campaign item from the sidebar first.");
+    if (!selectedHtml || !selectedId) return alert("Select a campaign item from the sidebar first.");
     try {
       const res = await fetch('/api/mcp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ keyword: targetKeyword, html_content: selectedHtml })
+        body: JSON.stringify({ campaignId: selectedId, keyword: targetKeyword, html_content: selectedHtml })
       });
       const data = await res.json();
       if (res.ok && data.success) {
         alert("Draft exported cleanly via MCP!");
+        setSelectedStatus('exported');
+        await loadData();
       } else {
         alert(`Export failed: ${data.error || 'Check server configuration'}`);
       }
@@ -255,7 +264,7 @@ export default function DashboardPage() {
                   >
                     <div className="flex justify-between items-start">
                       <p className={`font-semibold text-sm ${targetKeyword === item.keyword ? 'text-accent-text' : 'text-ink'}`}>{item.keyword}</p>
-                      <span className={`h-2 w-2 rounded-full mt-1 flex-shrink-0 ${item.status === 'approved' ? 'bg-green-500' : 'bg-yellow-500'}`} title={item.status || 'pending_review'} />
+                      <span className={`h-2 w-2 rounded-full mt-1 flex-shrink-0 ${statusColor(item.status)}`} title={item.status || 'pending_review'} />
                     </div>
                     <p className="text-[11px] text-sand mt-2 font-mono">{item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Recent'}</p>
                   </div>
@@ -267,7 +276,7 @@ export default function DashboardPage() {
           <div className="lg:col-span-2 flex flex-col bg-surface border border-line rounded-lg p-4 shadow-flat h-[600px]">
             <div className="flex justify-between items-center border-b border-line pb-4 mb-4">
               <div className="flex items-center space-x-2">
-                <span className={`h-2 w-2 rounded-full ${selectedStatus === 'approved' ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                <span className={`h-2 w-2 rounded-full ${statusColor(selectedStatus)}`} />
                 <h2 className="text-xs font-semibold tracking-wider uppercase text-accent-text">
                   Workspace Content Preview {selectedStatus && `— ${selectedStatus.replace('_', ' ')}`}
                 </h2>
@@ -284,7 +293,9 @@ export default function DashboardPage() {
                 )}
                 <button
                   onClick={handleMcpExport}
-                  className="px-4 py-2 text-xs font-bold text-white rounded-md bg-green-600 hover:opacity-90 active:scale-95 transition-all"
+                  disabled={selectedStatus !== 'approved'}
+                  title={selectedStatus !== 'approved' ? 'Approve this campaign before exporting' : undefined}
+                  className="px-4 py-2 text-xs font-bold text-white rounded-md bg-green-600 hover:opacity-90 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
                 >
                   Export via MCP
                 </button>

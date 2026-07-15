@@ -17,6 +17,45 @@ The JSON must have this exact shape:
 
 Return ONLY the JSON object, nothing else.`;
 
+const RISK_SYSTEM_PROMPT = `You are a fact-risk auditor for SEO articles. Given the article HTML below, return ONLY raw JSON, no markdown, no backticks, no commentary.
+
+The JSON must have this exact shape:
+{
+  "risk_score": number,        // 0-100, how risky this content is to publish unreviewed
+  "flags": string[],           // any of: "stale_date_reference", "pricing_claim", "local_business_claim", "statistic_claim", "regulatory_claim" — empty array if none
+  "flagged_snippets": string[] // the exact sentences that triggered flags, empty array if none
+}
+
+Flag content as risky if it:
+- References specific years, "current," "latest," or "as of" in a way that will go stale
+- States prices, costs, or cost ranges as fact
+- Claims specific business credentials (years in business, awards, ratings, "#1")
+- Cites statistics or percentages without attribution
+- References laws, codes, or regulations that could change
+
+Return ONLY the JSON object.`;
+
+async function scoreArticleRisk(openai: OpenAI, articleHtml: string) {
+  try {
+    const response = await openai.chat.completions.create({
+      model: 'gpt-5-mini',
+      messages: [
+        { role: 'system', content: RISK_SYSTEM_PROMPT },
+        { role: 'user', content: articleHtml },
+      ],
+      max_completion_tokens: 500,
+    });
+
+    const raw = response.choices?.[0]?.message?.content || '';
+    const cleaned = raw.replace(/```json|```/g, '').trim();
+    return JSON.parse(cleaned);
+  } catch (err) {
+    console.error('scoreArticleRisk failed, defaulting to manual review:', err);
+    // Fail safe: if scoring breaks, force human review rather than silently auto-approving
+    return { risk_score: 100, flags: ['risk_scoring_failed'], flagged_snippets: [] };
+  }
+}
+
 async function generateBrief(
   openai: OpenAI,
   keyword: string,
@@ -69,7 +108,7 @@ export async function POST(req: Request) {
       .from('campaigns')
       .insert({
         keyword,
-        status: 'pending_review',
+        status: 'generating',
         brief: brief || null,
         unverified_claims: brief?.unverified_claims || null,
         user_id: user.id,
@@ -140,9 +179,19 @@ ${JSON.stringify(brief, null, 2)}`
           }
           
           if (completeArticle) {
+            const RISK_THRESHOLD = 30; // tune after reviewing real score distribution
+            const riskResult = await scoreArticleRisk(openai, completeArticle);
+            const finalStatus =
+              riskResult.risk_score < RISK_THRESHOLD ? 'approved' : 'pending_review';
+
             await supabaseAdmin
               .from('campaigns')
-              .update({ content: completeArticle })
+              .update({
+                content: completeArticle,
+                status: finalStatus,
+                risk_score: riskResult.risk_score,
+                risk_flags: riskResult.flags,
+              })
               .eq('id', campaignRow.id);
           }
 
