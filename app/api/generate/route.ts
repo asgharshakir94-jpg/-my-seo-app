@@ -43,11 +43,14 @@ async function scoreArticleRisk(openai: OpenAI, articleHtml: string) {
         { role: 'system', content: RISK_SYSTEM_PROMPT },
         { role: 'user', content: articleHtml },
       ],
-      max_completion_tokens: 500,
+      max_completion_tokens: 1500,
     });
 
     const raw = response.choices?.[0]?.message?.content || '';
     const cleaned = raw.replace(/```json|```/g, '').trim();
+    if (!cleaned) {
+      console.error('scoreArticleRisk: empty content, likely reasoning tokens exhausted budget. finish_reason:', response.choices?.[0]?.finish_reason);
+    }
     return JSON.parse(cleaned);
   } catch (err) {
     console.error('scoreArticleRisk failed, defaulting to manual review:', err);
@@ -71,7 +74,7 @@ async function generateBrief(
         { role: 'system', content: BRIEF_SYSTEM_PROMPT },
         { role: 'user', content: userPrompt },
       ],
-      max_completion_tokens: 800,
+      max_completion_tokens: 2000,
     });
 
     const raw = response.choices?.[0]?.message?.content || '';
