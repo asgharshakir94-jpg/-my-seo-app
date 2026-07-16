@@ -5,6 +5,7 @@ import { FeaturesSection } from '@/components/FeaturesSection';
 import PricingSection from "@/components/PricingSection";
 import FAQSection from "@/components/FAQSection";
 import CaseStudiesSection from "@/components/CaseStudiesSection";
+import Footer from '@/components/Footer';
 export default function Page() {
   const [email, setEmail] = useState<string>("");
   const [subscribing, setSubscribing] = useState<boolean>(false);
