@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
 
 import OpenAI from 'openai';
+import { after } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { createClient } from '@/lib/supabase/server';
 
@@ -86,6 +87,34 @@ async function generateBrief(
   }
 }
 
+// Runs AFTER the response has been sent to the client, via Next.js's after().
+// This is intentionally decoupled from the stream lifecycle so a slow/failing
+// risk-scoring call can never block or kill the article save.
+async function runRiskScoringInBackground(openai: OpenAI, campaignId: number, completeArticle: string) {
+  try {
+    const RISK_THRESHOLD = 30; // tune after reviewing real score distribution
+    const riskResult = await scoreArticleRisk(openai, completeArticle);
+    const finalStatus =
+      riskResult.risk_score < RISK_THRESHOLD ? 'approved' : 'pending_review';
+
+    const { error: riskUpdateErr } = await supabaseAdmin
+      .from('campaigns')
+      .update({
+        status: finalStatus,
+        risk_score: riskResult.risk_score,
+        risk_flags: riskResult.flags,
+      })
+      .eq('id', campaignId);
+
+    if (riskUpdateErr) {
+      console.error('Failed to save risk scoring result for campaign', campaignId, riskUpdateErr);
+    }
+  } catch (err) {
+    console.error('Background risk scoring failed for campaign', campaignId, err);
+    // No-op: row is already saved as pending_review from Step A, safe to leave as-is.
+  }
+}
+
 export async function POST(req: Request) {
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -149,17 +178,17 @@ ${JSON.stringify(brief, null, 2)}`
     const response = await openai.chat.completions.create({
       model: 'gpt-5-mini',
       messages: [
-        { 
-          role: 'system', 
-          content: `You are RankinSEO's elite Autonomous SEO Campaign Pipeline. 
+        {
+          role: 'system',
+          content: `You are RankinSEO's elite Autonomous SEO Campaign Pipeline.
           Your mission is to write a highly authoritative, publication-ready, deeply optimized article targeting the user's primary keyword.
-          
+
           CRITICAL WRITING RULES:
           1. Format everything in semantic, elegant HTML structures (use <h2>, <h3>, <p>, <strong>, <em>, <ul>, and <li>).
           2. NEVER wrap your code output in markdown backticks (e.g., do not use \`\`\`html ... \`\`\`). Output pure text strings containing the HTML tags directly.
           3. Weave highly relevant latent semantic indexing (LSI) terms naturally throughout the narrative.
           4. Ensure an immediate, engaging hook in the introduction followed by highly actionable, clear structural subsections.
-          5. Target 900-1200 words total. Do not exceed 1400 words under any circumstances. Prioritize clarity and actionable value over exhaustive coverage — cut anything that doesn't directly help the reader.` 
+          5. Target 900-1200 words total. Do not exceed 1400 words under any circumstances. Prioritize clarity and actionable value over exhaustive coverage — cut anything that doesn't directly help the reader.`
         },
         { role: 'user', content: articleUserPrompt }
       ],
@@ -180,12 +209,12 @@ ${JSON.stringify(brief, null, 2)}`
               controller.enqueue(encoder.encode(text));
             }
           }
-          
+
           if (completeArticle) {
-            // STEP A: Save the article immediately with a safe default status.
-            // This must happen no matter what — even if risk scoring below
-            // times out or fails, the article is never lost.
-            await supabaseAdmin
+            // Save the article and flip status to pending_review immediately.
+            // This is the ONLY write that happens before the stream closes,
+            // so the client is never left waiting on risk scoring.
+            const { error: saveErr } = await supabaseAdmin
               .from('campaigns')
               .update({
                 content: completeArticle,
@@ -193,26 +222,13 @@ ${JSON.stringify(brief, null, 2)}`
               })
               .eq('id', campaignRow.id);
 
-            // STEP B: Best-effort risk scoring. If this is slow, errors, or
-            // the function gets cut off, the article above is already safe
-            // and sitting in pending_review for manual approval.
-            try {
-              const RISK_THRESHOLD = 30; // tune after reviewing real score distribution
-              const riskResult = await scoreArticleRisk(openai, completeArticle);
-              const finalStatus =
-                riskResult.risk_score < RISK_THRESHOLD ? 'approved' : 'pending_review';
-
-              await supabaseAdmin
-                .from('campaigns')
-                .update({
-                  status: finalStatus,
-                  risk_score: riskResult.risk_score,
-                  risk_flags: riskResult.flags,
-                })
-                .eq('id', campaignRow.id);
-            } catch (riskErr) {
-              console.error('Risk scoring step failed after content was already saved:', riskErr);
-              // No-op: row is already saved as pending_review, safe to leave as-is.
+            if (saveErr) {
+              console.error('Failed to save article for campaign', campaignRow.id, saveErr);
+            } else {
+              // Schedule risk scoring to run AFTER this response is fully sent.
+              // Using after() means it can't block or get killed alongside the
+              // client-facing stream — it runs as its own background task.
+              after(() => runRiskScoringInBackground(openai, campaignRow.id, completeArticle));
             }
           }
 
@@ -229,12 +245,12 @@ ${JSON.stringify(brief, null, 2)}`
         'Content-Type': 'text/event-stream; charset=utf-8',
         'Cache-Control': 'no-cache, no-transform',
         'Connection': 'keep-alive',
-        'X-Accel-Buffering': 'no', 
+        'X-Accel-Buffering': 'no',
       },
     });
 
   } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message }), { 
+    return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
