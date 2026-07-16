@@ -113,6 +113,7 @@ export default function Page() {
           </form>
         </div>
       </main>
+      <Footer/>
     </div>
   );
 }
