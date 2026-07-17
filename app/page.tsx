@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { FeaturesSection } from '@/components/FeaturesSection';
+import SecuritySection from "@/components/SecuritySection";
 import PricingSection from "@/components/PricingSection";
 import FAQSection from "@/components/FAQSection";
 import CaseStudiesSection from "@/components/CaseStudiesSection";
@@ -47,6 +48,7 @@ export default function Page() {
           <a href="#features" className="hover:text-ink transition-colors">What's Inside</a>
           <a href="#case-studies" className="hover:text-ink transition-colors">Case Studies</a>
           <a href="#pricing" className="hover:text-ink transition-colors">Pricing</a>
+          <a href="#security" className="hover:text-ink transition-colors">Security</a>
           <a href="#faq" className="hover:text-ink transition-colors">FAQ</a>
           <Link href="/contact" className="hover:text-ink transition-colors">Contact</Link>
           </nav> 
@@ -85,6 +87,7 @@ export default function Page() {
           </div>
         </div>
         <FeaturesSection />
+        <SecuritySection />
         <PricingSection />
         <FAQSection />
         <CaseStudiesSection />

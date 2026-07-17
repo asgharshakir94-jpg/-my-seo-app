@@ -85,12 +85,20 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-ink">6. Your Rights</h2>
-          <p className="text-sm text-ink/80 leading-relaxed">
-            Depending on your location (including under GDPR for users in the EU/UK), you may have
-            the right to access, correct, delete, or export your personal data, and to object to
-            or restrict certain processing. To exercise these rights, contact us using the details below.
-          </p>
+        <h2 className="text-lg font-semibold text-ink">6. Your Rights</h2>
+        <p className="text-sm text-ink/80 leading-relaxed">
+        Depending on your location (including under GDPR for users in the EU/UK), you may have
+        the right to access, correct, delete, or export your personal data, and to object to
+        or restrict certain processing. To exercise these rights, contact us using the details below.
+        </p>
+        <p className="text-sm text-ink/80 leading-relaxed">
+        <strong>To delete your account and data:</strong> email us at{' '}
+        <a href="mailto:support@rankinseo.xyz" className="text-accent-text underline underline-offset-2">
+        support@rankinseo.xyz
+        </a>{' '}
+        with the subject line "Delete My Account." We will permanently delete your account,
+        campaigns, and associated data within 30 days and confirm once it's complete.
+        </p>
         </section>
 
         <section className="space-y-3">
