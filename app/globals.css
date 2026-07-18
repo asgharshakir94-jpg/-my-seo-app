@@ -31,3 +31,22 @@ body {
   color: var(--color-ink);
   font-family: Arial, Helvetica, sans-serif;
 }
+.blog-content h2 {
+  @apply text-2xl font-semibold mt-10 mb-4 text-ink;
+}
+.blog-content h3 {
+  @apply text-xl font-semibold mt-8 mb-3 text-ink;
+}
+.blog-content p {
+  @apply mb-5 leading-relaxed text-ink/90;
+}
+.blog-content ul,
+.blog-content ol {
+  @apply mb-5 pl-6 space-y-2;
+}
+.blog-content a {
+  @apply underline hover:opacity-70;
+}
+.blog-content strong {
+  @apply font-semibold;
+}
