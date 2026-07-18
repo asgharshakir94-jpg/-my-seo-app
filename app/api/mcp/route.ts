@@ -71,9 +71,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Webflow pipeline refused authentication', details: data }, { status: response.status });
     }
 
+    const slug = keyword.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
     await supabaseAdmin
       .from('campaigns')
-      .update({ status: 'exported' })
+      .update({
+        status: 'exported',
+        slug: slug,
+        })
       .eq('id', campaignId);
 
     return NextResponse.json({ success: true, message: 'Draft exported cleanly via MCP!', data });
