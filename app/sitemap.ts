@@ -1,7 +1,8 @@
 import { MetadataRoute } from 'next';
+import { createClient } from '@/lib/supabase/server';
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  return [
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: 'https://rankinseo.xyz',
       lastModified: new Date(),
@@ -20,5 +21,27 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.8,
     },
+    {
+      url: 'https://rankinseo.xyz/blog',
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.7,
+    },
   ];
+
+  const supabase = await createClient();
+  const { data: articles } = await supabase
+    .from('campaigns')
+    .select('slug, created_at')
+    .in('status', ['approved', 'exported'])
+    .not('slug', 'is', null);
+
+  const blogRoutes: MetadataRoute.Sitemap = (articles ?? []).map((article) => ({
+    url: `https://rankinseo.xyz/blog/${article.slug}`,
+    lastModified: new Date(article.created_at),
+    changeFrequency: 'monthly',
+    priority: 0.6,
+  }));
+
+  return [...staticRoutes, ...blogRoutes];
 }
