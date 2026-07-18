@@ -108,27 +108,7 @@ export default function DashboardPage() {
     }
   };
 
-  const handleMcpExport = async () => {
-    if (!selectedHtml || !selectedId) return alert("Select a campaign item from the sidebar first.");
-    try {
-      const res = await fetch('/api/mcp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ campaignId: selectedId, keyword: targetKeyword, html_content: selectedHtml })
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        alert("Draft exported cleanly via MCP!");
-        setSelectedStatus('exported');
-        await loadData();
-      } else {
-        alert(`Export failed: ${data.error || 'Check server configuration'}`);
-      }
-    } catch (err) {
-      alert("Network transmission error occurred.");
-    }
-  };
-
+  
   const handleApprove = async () => {
     if (!selectedId) return;
     setApproving(true);
@@ -291,14 +271,7 @@ export default function DashboardPage() {
                     {approving ? "Approving..." : "Approve for Export"}
                   </button>
                 )}
-                <button
-                  onClick={handleMcpExport}
-                  disabled={selectedStatus !== 'approved'}
-                  title={selectedStatus !== 'approved' ? 'Approve this campaign before exporting' : undefined}
-                  className="px-4 py-2 text-xs font-bold text-white rounded-md bg-green-600 hover:opacity-90 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
-                >
-                  Export via MCP
-                </button>
+                
               </div>
             </div>
 
