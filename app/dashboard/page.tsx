@@ -108,8 +108,7 @@ export default function DashboardPage() {
     }
   };
 
-  
-  const handleApprove = async () => {
+    const handleApprove = async () => {
     if (!selectedId) return;
     setApproving(true);
     try {
