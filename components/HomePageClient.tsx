@@ -49,6 +49,7 @@ export default function HomePageClient() {
           <a href="#features" className="hover:text-ink transition-colors">What's Inside</a>
           <a href="#case-studies" className="hover:text-ink transition-colors">Case Studies</a>
           <a href="#pricing" className="hover:text-ink transition-colors">Pricing</a>
+          <Link href="/blog" className="hover:text-ink transition-colors">Blog</Link>
           <a href="#security" className="hover:text-ink transition-colors">Security</a>
           <a href="#faq" className="hover:text-ink transition-colors">FAQ</a>
           <Link href="/contact" className="hover:text-ink transition-colors">Contact</Link>
