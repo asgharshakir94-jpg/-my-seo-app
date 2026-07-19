@@ -44,13 +44,14 @@ async function scoreArticleRisk(openai: OpenAI, articleHtml: string) {
         { role: 'system', content: RISK_SYSTEM_PROMPT },
         { role: 'user', content: articleHtml },
       ],
-      max_completion_tokens: 1000,
+      max_completion_tokens: 4000,
     });
 
     const raw = response.choices?.[0]?.message?.content || '';
     const cleaned = raw.replace(/```json|```/g, '').trim();
     if (!cleaned) {
       console.error('scoreArticleRisk: empty content, likely reasoning tokens exhausted budget. finish_reason:', response.choices?.[0]?.finish_reason);
+      return { risk_score: 100, flags: ['risk_scoring_failed'], flagged_snippets: [] };
     }
     return JSON.parse(cleaned);
   } catch (err) {
