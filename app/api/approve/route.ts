@@ -16,9 +16,21 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ error: 'Campaign id is required' }), { status: 400 });
     }
 
+    const { data: campaign } = await supabaseAdmin
+      .from('campaigns')
+      .select('keyword')
+      .eq('id', id)
+      .single();
+
+    const slug = campaign?.keyword
+      ?.toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+
     const { error } = await supabaseAdmin
       .from('campaigns')
-      .update({ status: 'approved' })
+      .update({ status: 'approved', slug })
       .eq('id', id)
       .eq('user_id', user.id);
 
