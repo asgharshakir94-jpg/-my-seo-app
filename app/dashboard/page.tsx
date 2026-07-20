@@ -119,7 +119,7 @@ export default function DashboardPage() {
       });
       if (res.ok) {
         setSelectedStatus('approved');
-        alert("Campaign approved! You can now export it via MCP.");
+        alert("Campaign approved! It will now appear on your blog.");
         await loadData();
       } else {
         alert("Approval failed.");
