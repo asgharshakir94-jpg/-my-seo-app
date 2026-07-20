@@ -76,7 +76,7 @@ export default function HomePageClient() {
             touching a keyboard.
           </p>
           <div className="mt-6 flex items-center gap-4">
-            <Link href="/quiz">
+            <Link href="/audit">
               <button className="px-8 py-4 bg-black text-white rounded-md font-medium text-base">
                 Start Ranking
               </button>
