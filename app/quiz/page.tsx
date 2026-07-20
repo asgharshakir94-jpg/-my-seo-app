@@ -55,7 +55,7 @@ export default function QuizPage() {
 
           <form onSubmit={handleSubmit} className="space-y-3">
             <input
-              type="url"
+              type="text"
               required
               placeholder="https://your-website.com"
               value={url}
