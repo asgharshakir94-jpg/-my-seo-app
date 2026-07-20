@@ -198,7 +198,7 @@ export default function CaseStudiesSection() {
           industry&apos;s current data velocity.
         </p>
         <div className="flex gap-4">
-        <a href="/contact"
+        <a href="/audit"
         className="bg-paper text-ink px-6 py-2 rounded-md font-medium hover:opacity-90"
         >
         Request a Strategy Audit
