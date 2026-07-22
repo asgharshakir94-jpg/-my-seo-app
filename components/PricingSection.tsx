@@ -1,45 +1,80 @@
-import Link from "next/link";
+"use client";
+
+import { useEffect } from "react";
+
+declare global {
+  interface Window {
+    Paddle: any;
+  }
+}
+
 const plans = [
-    {
-      name: "Starter",
-      description: "For small projects & creators.",
-      price: "$49",
-      features: ["5 Domain Audits", "500 Keyword Tracks", "Weekly AI Content Ideas"],
-      cta: "Start 14-day Trial",
-      href: "/quiz",
-      highlighted: false,
-    },
-    {
-      name: "Growth",
-      description: "Best for scaling businesses.",
-      price: "$129",
-      features: [
-        "25 Domain Audits",
-        "2,500 Keyword Tracks",
-        "Daily AI Content Ideas",
-        "Competitor Intelligence",
-      ],
-      cta: "Upgrade to Growth",
-      href: "/quiz",
-      highlighted: true,
-    },
-    {
-      name: "Enterprise",
-      description: "For large-scale SEO agencies.",
-      price: "$499",
-      features: [
-        "Unlimited Audits",
-        "20,000 Keyword Tracks",
-        "White-label Reporting",
-        "Dedicated Account Manager",
-      ],
-      cta: "Contact Sales",
-      href: "/contact",
-      highlighted: false,
-    },
-  ];
+  {
+    name: "Starter",
+    description: "For small projects & creators.",
+    price: "$49",
+    features: ["5 Domain Audits", "500 Keyword Tracks", "Weekly AI Content Ideas"],
+    cta: "Start 14-day Trial",
+    priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER,
+    href: null,
+    highlighted: false,
+  },
+  {
+    name: "Growth",
+    description: "Best for scaling businesses.",
+    price: "$129",
+    features: [
+      "25 Domain Audits",
+      "2,500 Keyword Tracks",
+      "Daily AI Content Ideas",
+      "Competitor Intelligence",
+    ],
+    cta: "Upgrade to Growth",
+    priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_GROWTH,
+    href: null,
+    highlighted: true,
+  },
+  {
+    name: "Enterprise",
+    description: "For large-scale SEO agencies.",
+    price: "$499",
+    features: [
+      "Unlimited Audits",
+      "20,000 Keyword Tracks",
+      "White-label Reporting",
+      "Dedicated Account Manager",
+    ],
+    cta: "Contact Sales",
+    priceId: null,
+    href: "/contact",
+    highlighted: false,
+  },
+];
 
 export default function PricingSection() {
+  useEffect(() => {
+    if (typeof window !== "undefined" && !window.Paddle) {
+      const script = document.createElement("script");
+      script.src = "https://cdn.paddle.com/paddle/v2/paddle.js";
+      script.onload = () => {
+        window.Paddle.Environment.set(
+          process.env.NEXT_PUBLIC_PADDLE_ENV === "sandbox" ? "sandbox" : "production"
+        );
+        window.Paddle.Initialize({
+          token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN,
+        });
+      };
+      document.body.appendChild(script);
+    }
+  }, []);
+
+  const handleCheckout = (priceId?: string | null) => {
+    if (!priceId || !window.Paddle) return;
+    window.Paddle.Checkout.open({
+      items: [{ priceId, quantity: 1 }],
+    });
+  };
+
   return (
     <section id="pricing" className="max-w-7xl mx-auto p-4 md:p-8">
       <div className="text-center mb-16">
@@ -99,16 +134,30 @@ export default function PricingSection() {
                 </li>
               ))}
             </ul>
-            <Link
-            href={plan.href}
-            className={`w-full text-center py-2 rounded-md font-medium transition ${
-            plan.highlighted
-            ? "bg-ink text-paper hover:opacity-90"
-            : "border border-line text-ink hover:bg-surface"
-            }`}
-            >
-            {plan.cta}
-            </Link>    
+
+            {plan.href ? (
+              
+              <a href={plan.href}
+                className={`w-full text-center py-2 rounded-md font-medium transition ${
+                  plan.highlighted
+                    ? "bg-ink text-paper hover:opacity-90"
+                    : "border border-line text-ink hover:bg-surface"
+                }`}
+              >
+                {plan.cta}
+              </a>
+            ) : (
+              <button
+                onClick={() => handleCheckout(plan.priceId)}
+                className={`w-full text-center py-2 rounded-md font-medium transition ${
+                  plan.highlighted
+                    ? "bg-ink text-paper hover:opacity-90"
+                    : "border border-line text-ink hover:bg-surface"
+                }`}
+              >
+                {plan.cta}
+              </button>
+            )}
           </div>
         ))}
       </div>
