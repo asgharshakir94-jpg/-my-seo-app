@@ -1,0 +1,10 @@
+{
+    "mcpServers": {
+      "paddle-sandbox": {
+        "url": "https://sandbox-mcp.paddle.com/mcp"
+      },
+      "paddle-docs": {
+        "url": "https://paddlehq.mcp.kapa.ai"
+      }
+    }
+  }

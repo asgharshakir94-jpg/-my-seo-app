@@ -10,14 +10,29 @@ export default function SignupPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+
+    if (!agreedToTerms) {
+      setError('You must agree to the Terms of Service to continue.')
+      return
+    }
+
     setLoading(true)
 
     const supabase = createClient()
-    const { error } = await supabase.auth.signUp({ email, password })
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          terms_accepted_at: new Date().toISOString(),
+        },
+      },
+    })
 
     setLoading(false)
 
@@ -61,12 +76,30 @@ export default function SignupPage() {
               minLength={6}
               className="w-full bg-paper border border-line rounded-md px-4 py-2.5 text-sm text-ink placeholder-sand focus:outline-none focus:ring-2 focus:ring-accent-from/30 focus:border-accent-from transition-all duration-200"
             />
-
+            <label className="flex items-start gap-2 text-xs text-slate">
+              <input
+                type="checkbox"
+                checked={agreedToTerms}
+                onChange={(e) => setAgreedToTerms(e.target.checked)}
+                className="mt-0.5"
+              />
+              <span>
+                I agree to the{' '}
+                <a href="/terms" target="_blank" className="text-accent-text underline underline-offset-2">
+                  Terms of Service
+                </a>{' '}
+                and{' '}
+                <a href="/privacy" target="_blank" className="text-accent-text underline underline-offset-2">
+                  Privacy Policy
+                </a>
+                .
+              </span>
+            </label>
             {error && <p className="text-xs text-red-600">{error}</p>}
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !agreedToTerms}
               className="w-full bg-gradient-to-r from-accent-from to-accent-to hover:opacity-90 disabled:opacity-60 text-white text-sm font-bold px-4 py-2.5 rounded-md transition-all duration-200 active:scale-95 shadow-accent"
             >
               {loading ? 'Creating account...' : 'Sign up'}
