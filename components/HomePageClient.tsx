@@ -82,8 +82,11 @@ export default function HomePageClient() {
                 Start Ranking
               </button>
             </Link>
+            <p className="text-sm text-slate">
+              Free 14-day trial · No credit card required
+            </p>
+          
 
-           
           </div>
         </div>
         <FeaturesSection />
