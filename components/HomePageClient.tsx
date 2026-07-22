@@ -7,6 +7,7 @@ import PricingSection from "@/components/PricingSection";
 import FAQSection from "@/components/FAQSection";
 import CaseStudiesSection from "@/components/CaseStudiesSection";
 import Footer from '@/components/Footer';
+import FloatingRobotWidget from './FloatingRobotWidget';
 
 export default function HomePageClient() {
   const [email, setEmail] = useState<string>("");
@@ -82,10 +83,7 @@ export default function HomePageClient() {
               </button>
             </Link>
 
-            <button className="flex items-center gap-2 px-6 py-4 border border-line rounded-md font-medium text-ink hover:bg-surface transition-colors">
-              <span className="h-6 w-6 rounded-full bg-gradient-to-r from-accent-from to-accent-to" />
-              View Demo
-            </button>
+           
           </div>
         </div>
         <FeaturesSection />
@@ -118,6 +116,7 @@ export default function HomePageClient() {
           </form>
         </div>
       </main>
+      <FloatingRobotWidget />
       <Footer/>
     </div>
   );
