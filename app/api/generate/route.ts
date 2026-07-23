@@ -5,6 +5,7 @@ import OpenAI from 'openai';
 import { after } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 
 const BRIEF_SYSTEM_PROMPT = `You are an SEO research assistant. Given a target keyword (and optional city/industry context), produce a structured content brief as raw JSON only — no markdown, no backticks, no commentary.
 
@@ -50,12 +51,12 @@ async function scoreArticleRisk(openai: OpenAI, articleHtml: string) {
     const raw = response.choices?.[0]?.message?.content || '';
     const cleaned = raw.replace(/```json|```/g, '').trim();
     if (!cleaned) {
-      console.error('scoreArticleRisk: empty content, likely reasoning tokens exhausted budget. finish_reason:', response.choices?.[0]?.finish_reason);
+      logger.error({ event: 'risk_scoring_empty_response', finishReason: response.choices?.[0]?.finish_reason });
       return { risk_score: 100, flags: ['risk_scoring_failed'], flagged_snippets: [] };
     }
     return JSON.parse(cleaned);
   } catch (err) {
-    console.error('scoreArticleRisk failed, defaulting to manual review:', err);
+    logger.error({ event: 'risk_scoring_failed', error: err instanceof Error ? err.message : String(err) });
     // Fail safe: if scoring breaks, force human review rather than silently auto-approving
     return { risk_score: 100, flags: ['risk_scoring_failed'], flagged_snippets: [] };
   }
@@ -83,7 +84,7 @@ async function generateBrief(
     const cleaned = raw.replace(/```json|```/g, '').trim();
     return JSON.parse(cleaned);
   } catch (err) {
-    console.error('generateBrief failed, falling back to no-brief mode:', err);
+    logger.error({ event: 'brief_generation_failed', keyword, error: err instanceof Error ? err.message : String(err) });
     return null;
   }
 }
@@ -107,11 +108,13 @@ async function runRiskScoringInBackground(openai: OpenAI, campaignId: number, co
       })
       .eq('id', campaignId);
 
-    if (riskUpdateErr) {
-      console.error('Failed to save risk scoring result for campaign', campaignId, riskUpdateErr);
-    }
-  } catch (err) {
-    console.error('Background risk scoring failed for campaign', campaignId, err);
+      if (riskUpdateErr) {
+        logger.error({ event: 'risk_score_save_failed', campaignId, error: riskUpdateErr.message });
+      } else {
+        logger.info({ event: 'risk_scoring_completed', campaignId, status: finalStatus, riskScore: riskResult.risk_score });
+      }
+    } catch (err) {
+      logger.error({ event: 'risk_scoring_background_failed', campaignId, error: err instanceof Error ? err.message : String(err) });
     // No-op: row is already saved as pending_review from Step A, safe to leave as-is.
   }
 }
@@ -132,6 +135,8 @@ export async function POST(req: Request) {
     if (!keyword) {
       return new Response(JSON.stringify({ error: 'Keyword is required' }), { status: 400 });
     }
+
+    logger.info({ event: 'generation_started', keyword, city, industry, userId: user.id });
 
     const brief = await generateBrief(openai, keyword, city, industry);
 
@@ -223,9 +228,10 @@ ${JSON.stringify(brief, null, 2)}`
               })
               .eq('id', campaignRow.id);
 
-            if (saveErr) {
-              console.error('Failed to save article for campaign', campaignRow.id, saveErr);
-            } else {
+              if (saveErr) {
+                logger.error({ event: 'article_save_failed', campaignId: campaignRow.id, error: saveErr.message });
+              } else {
+                logger.info({ event: 'article_generated', campaignId: campaignRow.id, keyword, userId: user.id, wordCount: completeArticle.split(/\s+/).length });
               // Schedule risk scoring to run AFTER this response is fully sent.
               // Using after() means it can't block or get killed alongside the
               // client-facing stream — it runs as its own background task.
@@ -251,6 +257,7 @@ ${JSON.stringify(brief, null, 2)}`
     });
 
   } catch (error: any) {
+    logger.error({ event: 'generate_route_failed', userId: user.id, error: error.message });
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
