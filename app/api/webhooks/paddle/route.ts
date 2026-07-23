@@ -26,6 +26,13 @@ function verifySignature(rawBody: string, signatureHeader: string, secret: strin
 
   return timingSafeEqual(expectedBuf, actualBuf);
 }
+function getPlanName(priceId?: string): string | null {
+    const plans: Record<string, string> = {
+      'pri_01ky4d97vn69zedfatxtbcznre': 'Starter',
+      'pri_01ky4d4fvtbzf10jzybs62t0rb': 'Growth',
+    };
+    return priceId ? plans[priceId] ?? null : null;
+  }
 
 export async function POST(request: NextRequest) {
   const rawBody = await request.text();
@@ -59,7 +66,7 @@ export async function POST(request: NextRequest) {
             paddle_subscription_id: data.id,
             paddle_customer_id: data.customer_id,
             status: data.status,
-            plan: data.items?.[0]?.price?.name ?? null,
+            plan: getPlanName(data.items?.[0]?.price?.id),
             price_id: data.items?.[0]?.price?.id ?? null,
             current_period_end: data.current_billing_period?.ends_at ?? null,
             updated_at: new Date().toISOString(),
