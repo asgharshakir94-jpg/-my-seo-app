@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -47,7 +48,7 @@ export async function POST(request: NextRequest) {
   const eventType = event.event_type;
   const data = event.data;
 
-  console.log(`Paddle webhook received: ${eventType}`);
+  logger.info({ event: 'paddle_webhook_received', eventType, subscriptionId: data?.id });
 
   try {
     switch (eventType) {
@@ -55,9 +56,11 @@ export async function POST(request: NextRequest) {
       case 'subscription.updated':
       case 'subscription.activated': {
         const userId = data.custom_data?.user_id;
-        if (!userId) {
-          console.error('No user_id in custom_data, skipping', data.id);
-          break;
+        
+            if (!userId) {
+              logger.error({ event: 'paddle_webhook_missing_user_id', subscriptionId: data.id, eventType });
+              break;
+                  
         }
 
         await supabase.from('subscriptions').upsert(
@@ -89,9 +92,15 @@ export async function POST(request: NextRequest) {
         console.log(`Unhandled event type: ${eventType}`);
     }
   } catch (err) {
-    console.error('Error processing Paddle webhook:', err);
+    logger.error({
+      event: 'paddle_webhook_processing_failed',
+      eventType,
+      subscriptionId: data?.id,
+      error: err instanceof Error ? err.message : String(err),
+    });
     return NextResponse.json({ error: 'Processing failed' }, { status: 500 });
   }
 
+  logger.info({ event: 'paddle_webhook_processed', eventType, subscriptionId: data?.id, userId: data?.custom_data?.user_id });
   return NextResponse.json({ received: true }, { status: 200 });
 }
