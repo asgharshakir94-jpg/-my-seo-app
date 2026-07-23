@@ -236,3 +236,13 @@ Currently wired into:
   `article_save_failed`, `article_generated`, `generate_route_failed`
 
 Apply the same pattern to any new API route going forward.
+`app/api/generate/route.ts` also generates a `requestId` (via `crypto.randomUUID()`) 
+at the start of each request and threads it through every log line for that 
+request — including inside helper functions like `generateBrief` and 
+`runRiskScoringInBackground` — so the full lifecycle of one generation request 
+can be traced in Vercel's log search even under concurrent traffic. The Paddle 
+webhook doesn't need a separate `requestId` since `paddle_subscription_id` 
+already serves as its natural correlation key.
+
+Apply the same pattern (a `requestId` correlation field) to any new route that 
+spans multiple async steps or helper functions going forward.
