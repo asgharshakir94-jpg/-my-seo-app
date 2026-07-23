@@ -6,6 +6,7 @@ import { after } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
+import { randomUUID } from 'crypto';
 
 const BRIEF_SYSTEM_PROMPT = `You are an SEO research assistant. Given a target keyword (and optional city/industry context), produce a structured content brief as raw JSON only — no markdown, no backticks, no commentary.
 
@@ -37,7 +38,7 @@ Flag content as risky if it:
 
 Return ONLY the JSON object.`;
 
-async function scoreArticleRisk(openai: OpenAI, articleHtml: string) {
+async function scoreArticleRisk(openai: OpenAI, articleHtml: string, requestId: string) {
   try {
     const response = await openai.chat.completions.create({
       model: 'gpt-5-mini',
@@ -51,20 +52,20 @@ async function scoreArticleRisk(openai: OpenAI, articleHtml: string) {
     const raw = response.choices?.[0]?.message?.content || '';
     const cleaned = raw.replace(/```json|```/g, '').trim();
     if (!cleaned) {
-      logger.error({ event: 'risk_scoring_empty_response', finishReason: response.choices?.[0]?.finish_reason });
+      logger.error({ event: 'risk_scoring_empty_response', requestId, finishReason: response.choices?.[0]?.finish_reason });
       return { risk_score: 100, flags: ['risk_scoring_failed'], flagged_snippets: [] };
     }
     return JSON.parse(cleaned);
   } catch (err) {
-    logger.error({ event: 'risk_scoring_failed', error: err instanceof Error ? err.message : String(err) });
+    logger.error({ event: 'risk_scoring_failed', requestId, error: err instanceof Error ? err.message : String(err) }); 
     // Fail safe: if scoring breaks, force human review rather than silently auto-approving
     return { risk_score: 100, flags: ['risk_scoring_failed'], flagged_snippets: [] };
   }
 }
-
 async function generateBrief(
   openai: OpenAI,
   keyword: string,
+  requestId: string,
   city?: string,
   industry?: string
 ) {
@@ -84,7 +85,7 @@ async function generateBrief(
     const cleaned = raw.replace(/```json|```/g, '').trim();
     return JSON.parse(cleaned);
   } catch (err) {
-    logger.error({ event: 'brief_generation_failed', keyword, error: err instanceof Error ? err.message : String(err) });
+    logger.error({ event: 'brief_generation_failed', requestId, keyword, error: err instanceof Error ? err.message : String(err) });
     return null;
   }
 }
@@ -92,10 +93,10 @@ async function generateBrief(
 // Runs AFTER the response has been sent to the client, via Next.js's after().
 // This is intentionally decoupled from the stream lifecycle so a slow/failing
 // risk-scoring call can never block or kill the article save.
-async function runRiskScoringInBackground(openai: OpenAI, campaignId: number, completeArticle: string) {
+async function runRiskScoringInBackground(openai: OpenAI, campaignId: number, completeArticle: string, requestId: string) {
   try {
     const RISK_THRESHOLD = 30; // tune after reviewing real score distribution
-    const riskResult = await scoreArticleRisk(openai, completeArticle);
+    const riskResult = await scoreArticleRisk(openai, completeArticle, requestId);
     const finalStatus =
       riskResult.risk_score < RISK_THRESHOLD ? 'approved' : 'pending_review';
 
@@ -109,17 +110,18 @@ async function runRiskScoringInBackground(openai: OpenAI, campaignId: number, co
       .eq('id', campaignId);
 
       if (riskUpdateErr) {
-        logger.error({ event: 'risk_score_save_failed', campaignId, error: riskUpdateErr.message });
+        logger.error({ event: 'risk_score_save_failed', requestId, campaignId, error: riskUpdateErr.message });
       } else {
-        logger.info({ event: 'risk_scoring_completed', campaignId, status: finalStatus, riskScore: riskResult.risk_score });
+        logger.info({ event: 'risk_scoring_completed', requestId, campaignId, status: finalStatus, riskScore: riskResult.risk_score });
       }
     } catch (err) {
-      logger.error({ event: 'risk_scoring_background_failed', campaignId, error: err instanceof Error ? err.message : String(err) });
+      logger.error({ event: 'risk_scoring_background_failed', requestId, campaignId, error: err instanceof Error ? err.message : String(err) }); 
     // No-op: row is already saved as pending_review from Step A, safe to leave as-is.
   }
 }
 
 export async function POST(req: Request) {
+  const requestId = randomUUID();
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
   const supabaseSession = await createClient();
@@ -136,9 +138,9 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ error: 'Keyword is required' }), { status: 400 });
     }
 
-    logger.info({ event: 'generation_started', keyword, city, industry, userId: user.id });
+    logger.info({ event: 'generation_started', requestId, keyword, city, industry, userId: user.id });
 
-    const brief = await generateBrief(openai, keyword, city, industry);
+    const brief = await generateBrief(openai, keyword, requestId, city, industry);
 
     // STEP 1.5: Create (or reuse) the campaign row up front
     let campaignRow;
@@ -229,13 +231,13 @@ ${JSON.stringify(brief, null, 2)}`
               .eq('id', campaignRow.id);
 
               if (saveErr) {
-                logger.error({ event: 'article_save_failed', campaignId: campaignRow.id, error: saveErr.message });
+                logger.error({ event: 'article_save_failed', requestId, campaignId: campaignRow.id, error: saveErr.message });
               } else {
-                logger.info({ event: 'article_generated', campaignId: campaignRow.id, keyword, userId: user.id, wordCount: completeArticle.split(/\s+/).length });
+                logger.info({ event: 'article_generated', requestId, campaignId: campaignRow.id, keyword, userId: user.id, wordCount: completeArticle.split(/\s+/).length });  
               // Schedule risk scoring to run AFTER this response is fully sent.
               // Using after() means it can't block or get killed alongside the
               // client-facing stream — it runs as its own background task.
-              after(() => runRiskScoringInBackground(openai, campaignRow.id, completeArticle));
+              after(() => runRiskScoringInBackground(openai, campaignRow.id, completeArticle, requestId));
             }
           }
 
@@ -257,7 +259,7 @@ ${JSON.stringify(brief, null, 2)}`
     });
 
   } catch (error: any) {
-    logger.error({ event: 'generate_route_failed', userId: user.id, error: error.message });
+    logger.error({ event: 'generate_route_failed', requestId, userId: user.id, error: error.message });
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
