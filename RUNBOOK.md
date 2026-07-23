@@ -90,10 +90,15 @@ If checkout or subscriptions stop working specifically:
 
 ## 8. Backups
 
-- **Supabase**: free tier does NOT include automatic backups. Point-in-time 
-  recovery requires a paid plan. **Action item**: consider manually exporting 
-  critical tables (`campaigns`, `subscriptions`) periodically until on a 
-  paid plan, or upgrade if data loss risk becomes unacceptable.
+-- **Supabase**: free tier does NOT include automatic backups. Point-in-time 
+  recovery requires a paid plan. **Manual backup script exists**: run 
+  `node scripts/backup.js` to export `campaigns`, `subscriptions`, 
+  `contact_submissions`, `keyword_suggestions`, and `subscribers` to 
+  timestamped JSON files in `backups/` (git-ignored — contains real user 
+  data). After running, upload the timestamped folder to Google Drive → 
+  **RankinSEO Backups** (15 GB free tier, plenty of headroom — current 
+  backups are a few MB). No automated schedule yet; run manually before 
+  risky changes or periodically (e.g. monthly).
 - **Code**: fully backed up via GitHub (`asgharshakir94-jpg/-my-seo-app`) — 
   every deploy is a git commit, so code itself is never at risk
 
