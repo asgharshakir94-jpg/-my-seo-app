@@ -212,3 +212,27 @@ uncropped.
 
 UptimeRobot (free tier), 5-minute intervals, monitoring `rankinseo.xyz` 
 and `/login`. Email alerts only.
+## 12. Logging
+
+Structured logging via `lib/logger.ts` — never raw `console.log`/`console.error` 
+in API routes. Every log call takes an object with an `event` key plus relevant 
+fields (ids, error messages, counts), output as one-line JSON so Vercel's log 
+search can filter/query by field instead of grepping text.
+
+```typescript
+import { logger } from '@/lib/logger';
+
+logger.info({ event: 'something_happened', userId, campaignId });
+logger.error({ event: 'something_failed', campaignId, error: err.message });
+```
+
+Currently wired into:
+- `app/api/webhooks/paddle/route.ts` — `paddle_webhook_received`, 
+  `paddle_webhook_missing_user_id`, `paddle_webhook_processing_failed`, 
+  `paddle_webhook_processed`
+- `app/api/generate/route.ts` — `generation_started`, `brief_generation_failed`, 
+  `risk_scoring_empty_response`, `risk_scoring_failed`, `risk_score_save_failed`, 
+  `risk_scoring_completed`, `risk_scoring_background_failed`, 
+  `article_save_failed`, `article_generated`, `generate_route_failed`
+
+Apply the same pattern to any new API route going forward.
