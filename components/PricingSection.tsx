@@ -1,5 +1,6 @@
 "use client";
 
+import { createClient } from '@/lib/supabase/client';
 import { useEffect } from "react";
 
 declare global {
@@ -68,10 +69,21 @@ export default function PricingSection() {
     }
   }, []);
 
-  const handleCheckout = (priceId?: string | null) => {
+  const handleCheckout = async (priceId?: string) => {
     if (!priceId || !window.Paddle) return;
+  
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+  
+    if (!user) {
+      window.location.href = `/login?redirect=/#pricing`;
+      return;
+    }
+  
     window.Paddle.Checkout.open({
       items: [{ priceId, quantity: 1 }],
+      customer: { email: user.email },
+      customData: { user_id: user.id },
     });
   };
 
