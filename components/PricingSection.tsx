@@ -46,7 +46,7 @@ const plans = [
       "Dedicated Account Manager",
     ],
     cta: "Contact Sales",
-    priceId: null,
+    priceId: undefined,
     href: "/contact",
     highlighted: false,
   },
