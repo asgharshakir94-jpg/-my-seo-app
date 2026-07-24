@@ -9,14 +9,20 @@ export const metadata = {
   description: 'Roofing, solar, and trades industry guides and insights.',
 }
 
-function extractTitle(content: string | null, keyword: string) {
+function extractTitle(content: string | null, keyword: string): string {
   if (content) {
     const match = content.match(/<h[12][^>]*>(.*?)<\/h[12]>/i)
-    if (match) return match[1].replace(/<[^>]+>/g, '').trim()
+    if (match) {
+      const heading = match[1].replace(/<[^>]+>/g, '').trim()
+      // Skip numbered-list-style headings (e.g. "1. Your Website Has No Fresh Content")
+      // — these are list items picked up from body content, not the real article title
+      if (!/^\d+[\.\)]\s/.test(heading)) {
+        return heading
+      }
+    }
   }
-  return keyword.split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+  return keyword.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
 }
-
 function stripFirstHeading(content: string | null) {
   if (!content) return ''
   return content.replace(/<h[12][^>]*>.*?<\/h[12]>/i, '')
