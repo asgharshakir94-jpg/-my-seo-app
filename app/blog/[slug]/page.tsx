@@ -1,6 +1,9 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import rehypeRaw from 'rehype-raw'
 
 function extractTitle(content: string | null, keyword: string) {
   if (content) {
@@ -65,10 +68,11 @@ export default async function BlogArticlePage({
           day: 'numeric',
         })}
       </p>
-      <div
-        className="blog-content"
-        dangerouslySetInnerHTML={{ __html: stripFirstHeading(article.content) }}
-      />
+      <div className="blog-content prose prose-lg max-w-none prose-headings:text-ink prose-p:text-ink/80 prose-strong:text-ink prose-a:text-ink">
+          <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+            {stripFirstHeading(article.content)}
+          </ReactMarkdown>
+        </div>
     </article>
   )
 }
