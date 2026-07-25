@@ -83,7 +83,7 @@ export default function HomePageClient() {
               </button>
             </Link>
             <p className="text-base font-medium text-slate">
-              Free 14-day trial · No credit card required
+              Free 14-day trial · Cancel anytime
             </p>
           
 
