@@ -1,15 +1,24 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  const getSafeRedirect = () => {
+    const redirectTo = searchParams.get('redirectTo')
+    if (redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//')) {
+      return redirectTo
+    }
+    return '/dashboard'
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -26,7 +35,7 @@ export default function LoginPage() {
       return
     }
 
-    router.push('/dashboard')
+    router.push(getSafeRedirect())
     router.refresh()
   }
 
@@ -82,5 +91,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   )
 }
