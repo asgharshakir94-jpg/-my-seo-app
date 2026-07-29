@@ -40,11 +40,34 @@ export async function generateMetadata({
 
   if (!article) return { title: 'Article not found | RankinSEO' }
 
+  const title = `${extractTitle(article.content, article.keyword)} | RankinSEO Blog`
+  const description = article.meta_description || undefined
+
   return {
-    title: `${extractTitle(article.content, article.keyword)} | RankinSEO Blog`,
-    description: article.meta_description || undefined,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `https://rankinseo.xyz/blog/${article.slug}`,
+      siteName: 'RankinSEO',
+      images: [
+        {
+          url: 'https://rankinseo.xyz/og-default.jpg',
+          width: 1200,
+          height: 630,
+        },
+      ],
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['https://rankinseo.xyz/og-default.jpg'],
+    },
   }
-}
+} 
 
 export default async function BlogArticlePage({
   params,
