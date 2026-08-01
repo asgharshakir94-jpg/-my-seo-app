@@ -8,6 +8,26 @@ import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
 import { randomUUID } from 'crypto';
 
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')   // strip punctuation
+    .replace(/\s+/g, '-')       // spaces to hyphens
+    .replace(/-+/g, '-')        // collapse repeats
+    .slice(0, 80);              // keep URLs reasonable
+}
+
+function buildSeoTitle(keyword: string): string {
+  // Keep under ~60 chars for SERP display
+  const base = keyword.trim();
+  return base.length > 60 ? base.slice(0, 57) + '...' : base;
+}
+
+function buildMetaDescription(keyword: string): string {
+  return `${keyword.trim()} — practical, actionable guidance to help you get results. Learn what works and how to get started today.`.slice(0, 155);
+}
+
 const BRIEF_SYSTEM_PROMPT = `You are an SEO research assistant. Given a target keyword (and optional city/industry context), produce a structured content brief as raw JSON only — no markdown, no backticks, no commentary.
 
 The JSON must have this exact shape:
@@ -137,6 +157,9 @@ export async function POST(req: Request) {
     if (!keyword) {
       return new Response(JSON.stringify({ error: 'Keyword is required' }), { status: 400 });
     }
+    const slug = slugify(keyword);
+    const seoTitle = buildSeoTitle(keyword);
+    const metaDescription = buildMetaDescription(keyword);
 
     logger.info({ event: 'generation_started', requestId, keyword, city, industry, userId: user.id });
 
@@ -148,6 +171,9 @@ export async function POST(req: Request) {
       .from('campaigns')
       .insert({
         keyword,
+        slug,
+        title: seoTitle,
+        meta_description: metaDescription,  
         status: 'generating',
         brief: brief || null,
         unverified_claims: brief?.unverified_claims || null,
@@ -196,7 +222,8 @@ ${JSON.stringify(brief, null, 2)}`
           2. NEVER wrap your code output in markdown backticks (e.g., do not use \`\`\`html ... \`\`\`). Output pure text strings containing the HTML tags directly.
           3. Weave highly relevant latent semantic indexing (LSI) terms naturally throughout the narrative.
           4. Ensure an immediate, engaging hook in the introduction followed by highly actionable, clear structural subsections.
-          5. Target 900-1200 words total. Do not exceed 1400 words under any circumstances. Prioritize clarity and actionable value over exhaustive coverage — cut anything that doesn't directly help the reader.`
+          5. Target 900-1200 words total. Do not exceed 1400 words under any circumstances. Prioritize clarity and actionable value over exhaustive coverage — cut anything that doesn't directly help the reader.
+          6. Do NOT include an <h1> tag in your output — the page title is handled separately. Start directly with your intro paragraph, then use <h2> for section headers.`
         },
         { role: 'user', content: articleUserPrompt }
       ],
@@ -219,17 +246,16 @@ ${JSON.stringify(brief, null, 2)}`
           }
 
           if (completeArticle) {
-            // Save the article and flip status to pending_review immediately.
-            // This is the ONLY write that happens before the stream closes,
-            // so the client is never left waiting on risk scoring.
+            const finalArticle = `<h1>${seoTitle}</h1>\n${completeArticle}`;
+          
             const { error: saveErr } = await supabaseAdmin
               .from('campaigns')
               .update({
-                content: completeArticle,
+                content: finalArticle,
                 status: 'pending_review',
               })
               .eq('id', campaignRow.id);
-
+              
               if (saveErr) {
                 logger.error({ event: 'article_save_failed', requestId, campaignId: campaignRow.id, error: saveErr.message });
               } else {
@@ -237,7 +263,7 @@ ${JSON.stringify(brief, null, 2)}`
               // Schedule risk scoring to run AFTER this response is fully sent.
               // Using after() means it can't block or get killed alongside the
               // client-facing stream — it runs as its own background task.
-              after(() => runRiskScoringInBackground(openai, campaignRow.id, completeArticle, requestId));
+              after(() => runRiskScoringInBackground(openai, campaignRow.id, finalArticle, requestId));
             }
           }
 
