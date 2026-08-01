@@ -22,7 +22,7 @@ async function getArticle(slug: string) {
   const supabase = await createClient()
   const { data } = await supabase
     .from('campaigns')
-    .select('keyword, slug, content, meta_description, created_at, status')
+    .select('keyword, slug, title, content, meta_description, created_at, status')
     .eq('slug', slug)
     .in('status', ['approved', 'exported'])
     .single()
@@ -40,7 +40,8 @@ export async function generateMetadata({
 
   if (!article) return { title: 'Article not found | RankinSEO' }
 
-  const title = `${extractTitle(article.content, article.keyword)} | RankinSEO Blog`
+  const pageTitle = article.title || extractTitle(article.content, article.keyword)
+  const title = `${pageTitle} | RankinSEO Blog`
   const description = article.meta_description || undefined
 
   return {
@@ -67,7 +68,7 @@ export async function generateMetadata({
       images: ['https://rankinseo.xyz/og-default.jpg'],
     },
   }
-} 
+}
 
 export default async function BlogArticlePage({
   params,
@@ -79,10 +80,12 @@ export default async function BlogArticlePage({
 
   if (!article) notFound()
 
+  const pageTitle = article.title || extractTitle(article.content, article.keyword)
+
   return (
     <article className="max-w-3xl mx-auto px-6 py-16">
       <h1 className="text-3xl font-semibold tracking-tight mb-4">
-        {extractTitle(article.content, article.keyword)}
+        {pageTitle}
       </h1>
       <p className="text-sm text-ink/50 mb-10">
         {new Date(article.created_at).toLocaleDateString('en-US', {
