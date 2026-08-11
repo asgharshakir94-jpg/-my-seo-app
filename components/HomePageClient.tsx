@@ -76,18 +76,21 @@ export default function HomePageClient() {
             straight to your CMS — so your traffic keeps growing without you
             touching a keyboard.
           </p>
-          <div className="mt-6 flex items-center gap-4">
-            <Link href="/audit">
-              <button className="px-8 py-4 bg-black text-white rounded-md font-medium text-base">
-                Start Ranking
-              </button>
-            </Link>
-            <p className="text-base font-medium text-slate">
-              Free 14-day trial · Cancel anytime
-            </p>
-          
-
-          </div>
+           <div className="mt-6 flex flex-wrap items-center gap-4">
+           <Link href="/">
+           <button className="px-8 py-4 bg-black text-white rounded-md font-medium text-base">
+            Start Ranking
+           </button>
+           </Link>
+           <Link href="/audit">
+           <button className="px-8 py-4 border border-ink text-ink rounded-md font-medium text-base hover:bg-surface transition-colors">
+            Try Free Audit
+           </button>
+           </Link>
+           <p className="text-base font-medium text-slate w-full sm:w-auto">
+            Free 14-day trial · Cancel anytime
+           </p>
+         </div>
         </div>
         <FeaturesSection />
         <SecuritySection />
