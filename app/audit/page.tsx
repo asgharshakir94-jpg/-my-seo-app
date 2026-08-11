@@ -1,6 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+
+import { useState, useRef } from 'react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas-pro';
 
 interface Check {
   id: string;
@@ -20,6 +23,31 @@ export default function AuditPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState<AuditResult | null>(null);
+
+ 
+  const [downloading, setDownloading] = useState(false);
+  const resultsRef = useRef<HTMLDivElement>(null);
+
+  const handleDownloadPDF = async () => {
+    if (!resultsRef.current) return;
+    setDownloading(true);
+    try {
+      const canvas = await html2canvas(resultsRef.current, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+      });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`rankinseo-audit-${result?.url.replace(/https?:\/\//, '').replace(/\//g, '')}.pdf`);
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  
 
   const runAudit = async () => {
     if (!url.trim()) return;
@@ -87,6 +115,7 @@ export default function AuditPage() {
 
         {result && (
           <div>
+            <div ref={resultsRef} className="bg-paper p-1">
             <div className={`flex items-center gap-4 border rounded-lg px-5 py-4 mb-6 ${scoreColor(result.score)}`}>
               <div className="text-3xl font-bold">{result.score}%</div>
               <div>
@@ -96,6 +125,7 @@ export default function AuditPage() {
                 </p>
               </div>
             </div>
+            
 
             <div className="flex flex-col gap-3">
               {result.checks.map((check) => (
@@ -112,8 +142,18 @@ export default function AuditPage() {
                   </span>
                 </div>
               ))}
+               </div>
             </div>
-            <div className="mt-8 bg-gradient-to-r from-accent-from to-accent-to rounded-lg p-6 text-white text-center">
+
+            <button
+              onClick={handleDownloadPDF}
+              disabled={downloading}
+              className="w-full sm:w-auto border border-line text-ink font-medium px-6 py-3 rounded-md hover:bg-surface transition-colors disabled:opacity-50 mb-6"
+            >
+              {downloading ? 'Generating PDF...' : 'Download PDF Report'}
+            </button>
+
+            <div className="mt-8 bg-gradient-to-r from-accent-from to-accent-to rounded-lg p-6 text-white text-center">         
               <p className="font-medium text-lg mb-1">
                 Want us to fix these issues for you?
               </p>
