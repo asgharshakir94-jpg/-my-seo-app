@@ -1,9 +1,9 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import BackToTop from "@/components/backToTop";
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 3600
-
 export const metadata = {
   title: 'Blog | RankinSEO',
   description: 'Roofing, solar, and trades industry guides and insights.',
@@ -60,8 +60,9 @@ export default async function BlogIndexPage() {
           <Link
             key={article.id}
             href={`/blog/${article.slug}`}
-            className="block rounded-lg border border-line bg-surface p-6 hover:border-ink/30 transition-colors"
+            className="block rounded-lg border border-line bg-surface p-6 border-l-4 border-l-transparent hover:border-l-accent-from hover:border-ink/30 transition-colors"
           >
+            <span className="inline-block h-2 w-2 rounded-full bg-gradient-to-r from-accent-from to-accent-to mb-2" />
             <h2 className="text-lg font-semibold mb-2">
               {extractTitle(article.content, article.keyword)}
             </h2>
@@ -71,6 +72,8 @@ export default async function BlogIndexPage() {
           </Link>
         ))}
       </div>
+      <BackToTop />
     </div>
+
   )
 }
