@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function FeaturesSection() {
     return (
         <section id="features" className="bg-paper px-6 py-24">
@@ -96,14 +98,14 @@ export function FeaturesSection() {
           <h3 className="text-3xl font-bold text-paper">
             Ready to Command the Search Landscape?
           </h3>
-          <div className="mt-6 flex gap-4 justify-center">
-            <button className="bg-white text-ink px-6 py-3 rounded-lg font-medium">
-              Start Your Free Audit
-            </button>
-            <button className="border border-paper/40 text-paper px-6 py-3 rounded-lg font-medium">
-              Talk to an Expert
-            </button>
-          </div>
+        <div className="mt-6 flex gap-4 justify-center">
+         <Link href="/audit" className="bg-white text-ink px-6 py-3 rounded-lg font-medium">
+         Start Your Free Audit
+         </Link>
+         <Link href="/contact" className="border border-paper/40 text-paper px-6 py-3 rounded-lg font-medium">
+         Talk to an Expert
+         </Link>
+         </div>
         </div>
       </section>
     );
