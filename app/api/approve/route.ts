@@ -28,14 +28,22 @@ export async function POST(req: Request) {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
 
-    const { error } = await supabaseAdmin
+      const { data, error } = await supabaseAdmin
       .from('campaigns')
       .update({ status: 'approved', slug })
       .eq('id', id)
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .select('id');
 
     if (error) {
       return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    }
+
+    if (!data || data.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'No matching campaign found to approve (id/user mismatch).' }),
+        { status: 404 }
+      );
     }
 
     return new Response(JSON.stringify({ success: true }), { status: 200 });
