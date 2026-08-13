@@ -5,7 +5,8 @@ import { useEffect } from "react";
 
 declare global {
   interface Window {
-    Paddle: any;
+    createLemonSqueezy: any;
+    LemonSqueezy: any;
   }
 }
 
@@ -16,7 +17,7 @@ const plans = [
     price: "$49",
     features: ["5 Domain Audits", "500 Keyword Tracks", "Weekly AI Content Ideas"],
     cta: "Start 14-day Trial",
-    priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER,
+    checkoutId: "2a0b208d-83ce-4029-b9ea-3b155ae62b83",
     href: null,
     highlighted: false,
   },
@@ -31,7 +32,7 @@ const plans = [
       "Competitor Intelligence",
     ],
     cta: "Upgrade to Growth",
-    priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_GROWTH,
+    checkoutId: "4accf49a-1b3c-42df-9823-1e73672cde19",
     href: null,
     highlighted: true,
   },
@@ -46,7 +47,7 @@ const plans = [
       "Dedicated Account Manager",
     ],
     cta: "Contact Sales",
-    priceId: undefined,
+    checkoutId: undefined,
     href: "/contact",
     highlighted: false,
   },
@@ -54,37 +55,43 @@ const plans = [
 
 export default function PricingSection() {
   useEffect(() => {
-    if (typeof window !== "undefined" && !window.Paddle) {
+    if (typeof window !== "undefined" && !window.createLemonSqueezy) {
       const script = document.createElement("script");
-      script.src = "https://cdn.paddle.com/paddle/v2/paddle.js";
+      script.src = "https://app.lemonsqueezy.com/js/lemon.js";
+      script.defer = true;
       script.onload = () => {
-        window.Paddle.Environment.set(
-          process.env.NEXT_PUBLIC_PADDLE_ENV === "sandbox" ? "sandbox" : "production"
-        );
-        window.Paddle.Initialize({
-          token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN,
-        });
+        if (window.createLemonSqueezy) {
+          window.createLemonSqueezy();
+        }
       };
       document.body.appendChild(script);
     }
   }, []);
 
-  const handleCheckout = async (priceId?: string) => {
-    if (!priceId || !window.Paddle) return;
-  
+  const handleCheckout = async (checkoutId?: string) => {
+    if (!checkoutId) return;
+
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
-  
+
     if (!user) {
       window.location.href = `/login?redirect=/#pricing`;
       return;
     }
-  
-    window.Paddle.Checkout.open({
-      items: [{ priceId, quantity: 1 }],
-      customer: { email: user.email },
-      customData: { user_id: user.id },
+
+    const params = new URLSearchParams({
+      "checkout[email]": user.email || "",
+      "checkout[custom][user_id]": user.id,
+      embed: "1",
     });
+
+    const checkoutUrl = `https://rankinseo.lemonsqueezy.com/checkout/buy/${checkoutId}?${params.toString()}`;
+
+    if (window.LemonSqueezy?.Url?.Open) {
+      window.LemonSqueezy.Url.Open(checkoutUrl);
+    } else {
+      window.location.href = checkoutUrl;
+    }
   };
 
   return (
@@ -148,7 +155,6 @@ export default function PricingSection() {
             </ul>
 
             {plan.href ? (
-              
               <a href={plan.href}
                 className={`w-full text-center py-2 rounded-md font-medium transition ${
                   plan.highlighted
@@ -160,7 +166,7 @@ export default function PricingSection() {
               </a>
             ) : (
               <button
-                onClick={() => handleCheckout(plan.priceId)}
+                onClick={() => handleCheckout(plan.checkoutId)}
                 className={`w-full text-center py-2 rounded-md font-medium transition ${
                   plan.highlighted
                     ? "bg-ink text-paper hover:opacity-90"
