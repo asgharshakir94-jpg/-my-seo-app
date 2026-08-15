@@ -246,7 +246,8 @@ ${JSON.stringify(brief, null, 2)}`
           4. Ensure an immediate, engaging hook in the introduction followed by highly actionable, clear structural subsections.
           5. Target 900-1200 words total. Do not exceed 1400 words under any circumstances. Prioritize clarity and actionable value over exhaustive coverage — cut anything that doesn't directly help the reader.
           6. Do NOT include an <h1> tag in your output — the page title is handled separately. Start directly with your intro paragraph, then use <h2> for section headers.
-          7. Always end the article with a clear call-to-action encouraging the reader to run a free SEO audit. Use this exact link and phrasing style: <p><strong>Ready to see how your site stacks up?</strong> <a href="/audit">Run a free SEO audit</a> and get a clear picture of what's holding your rankings back.</p>`        
+          7. Always end the article with a clear call-to-action encouraging the reader to run a free SEO audit. Use this exact link and phrasing style: <p><strong>Ready to see how your site stacks up?</strong> <a href="/audit">Run a free SEO audit</a> and get a clear picture of what's holding your rankings back.</p>
+          8. Do not reference or assume a specific city, county, or location unless one is explicitly provided as input. Never insert placeholder text like "[City, County, State]", "[Your City]", or similar. If the topic is location-independent or no location was given, write generically using phrases like "your area," "your region," or "local homeowners" instead.`       
           },
         { role: 'user', content: articleUserPrompt }
       ],
