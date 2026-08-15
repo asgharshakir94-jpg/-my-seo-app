@@ -11,6 +11,9 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const [agreedToTerms, setAgreedToTerms] = useState(false)
+  const [fullName, setFullName] = useState("");
+  const [trade, setTrade] = useState("");
+  const [country, setCountry] = useState("");
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,8 +33,11 @@ export default function SignupPage() {
       options: {
         data: {
           terms_accepted_at: new Date().toISOString(),
+          full_name: fullName,
+          trade: trade,
+          country: country,
         },
-      },
+      }, 
     })
 
     setLoading(false)
@@ -66,6 +72,39 @@ export default function SignupPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full bg-paper border border-line rounded-md px-4 py-2.5 text-sm text-ink placeholder-sand focus:outline-none focus:ring-2 focus:ring-accent-from/30 focus:border-accent-from transition-all duration-200"
+            />
+            <input
+            type="text"
+            placeholder="Full name"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            required
+            className="w-full ..." // match your email input's className exactly
+          />
+
+          <select
+            value={trade}
+            onChange={(e) => setTrade(e.target.value)}
+            required
+            className="w-full ..." // match your input styling
+          >
+            <option value="">Select your trade</option>
+            <option value="roofing">Roofing</option>
+            <option value="solar">Solar</option>
+            <option value="hvac">HVAC</option>
+            <option value="plumbing">Plumbing</option>
+            <option value="electrician">Electrician</option>
+            <option value="carpentry">Carpentry</option>
+            <option value="other">Other</option>
+          </select>
+
+            <input
+              type="text"
+              placeholder="Country"
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              required
+              className="w-full ..." // match your input styling
             />
             <input
               type="password"
