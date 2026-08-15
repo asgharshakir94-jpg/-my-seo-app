@@ -18,12 +18,34 @@ function slugify(text: string): string {
     .slice(0, 80);              // keep URLs reasonable
 }
 
+const TITLE_CASE_ACRONYMS = new Set([
+  'SEO', 'HVAC', 'AI', 'GBP', 'PDF', 'FAQ', 'USA', 'UK', 'PK',
+  'NIC', 'SWIFT', 'IBAN', 'URL', 'API', 'SaaS', 'ROI', 'PPC',
+]);
+
+const TITLE_CASE_LOWERCASE = new Set([
+  'a', 'an', 'the', 'and', 'or', 'but', 'for', 'nor', 'in', 'on',
+  'at', 'to', 'of', 'vs',
+]);
+
 function buildSeoTitle(keyword: string): string {
-  // Keep under ~60 chars for SERP display
-  const base = keyword.trim();
+  const words = keyword.trim().split(/\s+/);
+
+  const titled = words.map((word, i) => {
+    const upper = word.toUpperCase();
+    if (TITLE_CASE_ACRONYMS.has(upper)) return upper;
+
+    const lower = word.toLowerCase();
+    if (i !== 0 && i !== words.length - 1 && TITLE_CASE_LOWERCASE.has(lower)) {
+      return lower;
+    }
+
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+  });
+
+  const base = titled.join(' ');
   return base.length > 60 ? base.slice(0, 57) + '...' : base;
 }
-
 function buildMetaDescription(keyword: string): string {
   return `${keyword.trim()} — practical, actionable guidance to help you get results. Learn what works and how to get started today.`.slice(0, 155);
 }
@@ -93,7 +115,7 @@ async function generateBrief(
     const userPrompt = `Keyword: "${keyword}"${city ? `\nCity: ${city}` : ''}${industry ? `\nIndustry: ${industry}` : ''}`;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-5-mini',
+      model: 'gpt-5.6-terra',  
       messages: [
         { role: 'system', content: BRIEF_SYSTEM_PROMPT },
         { role: 'user', content: userPrompt },
@@ -210,7 +232,7 @@ ${JSON.stringify(brief, null, 2)}`
       : `Execute an end-to-end autonomous content optimization sprint for the keyword: "${keyword}".`;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-5-mini',
+      model: 'gpt-5.6-terra',
       messages: [
         {
           role: 'system',

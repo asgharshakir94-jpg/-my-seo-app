@@ -133,37 +133,19 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-paper text-ink font-sans antialiased selection:bg-accent-soft">
-      <nav className="border-b border-line bg-paper/90 backdrop-blur-md sticky top-0 z-50 px-4 py-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-gradient-to-r from-accent-from to-accent-to shadow-accent" />
-            <span className="font-bold tracking-tight text-lg text-ink">
-              RankinSEO <span className="text-sand font-medium">Project Platform</span>
-            </span>
-          </Link>
-          <div className="flex items-center gap-6">
-          <Link href="/" className="text-lg font-medium text-ink/70 hover:text-ink transition-colors">
-          Home
-          </Link>
-          <Link href="/#pricing" className="text-lg font-medium text-ink/70 hover:text-ink transition-colors">
-          Pricing
-          </Link>
-          </div>
-          <div className="flex items-center gap-3">
-          
-
-            <div className="text-xs text-slate font-mono bg-surface px-3 py-2 rounded-md border border-line">
-              Engine Status: <span className="text-accent-text font-semibold">gpt-5-mini Live</span>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="text-xs font-bold text-white bg-gradient-to-r from-accent-from to-accent-to rounded-md px-4 py-2 hover:opacity-90 active:scale-95 transition-all duration-200 shadow-accent"
-            >
-              Log out
-            </button>
-          </div>
-        </div>
-      </nav>
+      <div className="border-b border-line bg-surface px-4 py-3">
+      <div className="max-w-7xl mx-auto flex justify-end items-center gap-3">
+      <div className="text-xs text-slate font-mono bg-paper px-3 py-2 rounded-md border border-line">
+       Engine: <span className="text-accent-text font-semibold">gpt-5.6-terra</span> · Risk-check: <span className="text-accent-text font-semibold">gpt-5-mini</span>
+      </div>
+      <button
+      onClick={handleLogout}
+      className="text-xs font-bold text-white bg-gradient-to-r from-accent-from to-accent-to rounded-md px-4 py-2 hover:opacity-90 active:scale-95 transition-all duration-200 shadow-accent"
+    >
+      Log out
+     </button>
+     </div>
+     </div>
 
       <main className="max-w-7xl mx-auto p-4 md:p-4 space-y-4">
         <div className="pt-8 pb-4 px-2">

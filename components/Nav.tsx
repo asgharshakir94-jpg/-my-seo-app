@@ -1,7 +1,12 @@
-import Link from "next/link";
+"use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Nav() {
+  const pathname = usePathname();
+  const isDashboard = pathname?.startsWith("/dashboard");
+
   return (
     <nav className="border-b border-line bg-paper/90 backdrop-blur-md sticky top-0 z-50 px-4 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -19,15 +24,21 @@ export default function Nav() {
           <a href="#security" className="hover:text-ink transition-colors">Security</a>
           <a href="#faq" className="hover:text-ink transition-colors">FAQ</a>
           <Link href="/contact" className="hover:text-ink transition-colors">Contact</Link>
-          </nav> 
-          <Link href="/login" className="text-sm font-medium text-ink/80 hover:text-ink transition-colors">
-          Log In
-          </Link>
-          <Link href="/dashboard">
-          <button className="text-xs font-bold text-white bg-black px-4 py-2 rounded-md">
-          Open Dashboard
-          </button>
-          </Link>
+          </nav>
+          <div className="flex items-center gap-4">
+            {!isDashboard && (
+              <>
+                <Link href="/login" className="text-sm font-medium text-ink/80 hover:text-ink transition-colors">
+                Log In
+                </Link>
+                <Link href="/dashboard">
+                <button className="text-xs font-bold text-white bg-black px-4 py-2 rounded-md">
+                Open Dashboard
+                </button>
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </nav>
       );

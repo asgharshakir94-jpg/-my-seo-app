@@ -26,7 +26,7 @@ Return ONLY valid JSON, an array of objects with keys: keyword, intent, rational
 `;
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-5-mini',
+    model: 'gpt-5.6-terra',
     messages: [{ role: 'user', content: prompt }],
   });
 
