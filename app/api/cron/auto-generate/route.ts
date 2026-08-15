@@ -222,24 +222,13 @@ ${JSON.stringify(brief, null, 2)}`
 
     await supabaseAdmin.from('keyword_suggestions').update({ status: 'used' }).eq('id', keywordRow.id);
 
-    const riskResult = await scoreArticleRisk(openai, finalArticle, requestId);
-    const finalStatus = riskResult.risk_score < RISK_THRESHOLD ? 'approved' : 'pending_review';
-
-    await supabaseAdmin
-      .from('campaigns')
-      .update({
-        status: finalStatus,
-        risk_score: riskResult.risk_score,
-        risk_flags: riskResult.flags,
-      })
-      .eq('id', campaignRow.id);
-
+    // Risk-scoring skipped in cron path to stay under Hobby-plan 60s limit —
+    // article stays pending_review, same as manual review flow.
     return {
       keyword,
       success: true,
-      status: finalStatus as 'approved' | 'pending_review',
+      status: 'pending_review' as const,
       slug,
-      riskScore: riskResult.risk_score,
     };
   } catch (err) {
     logger.error({ event: 'cron_article_generation_failed', requestId, keyword, error: err instanceof Error ? err.message : String(err) });
@@ -261,42 +250,40 @@ async function sendSummaryEmail(results: RunResult[], requestId: string) {
 
   const resend = new Resend(apiKey);
 
-  const approved = results.filter((r) => r.success && r.status === 'approved');
+  const approved = results.filter((r) => r.success && r.status === ('approved' as string));
   const pending = results.filter((r) => r.success && r.status === 'pending_review');
   const failed = results.filter((r) => !r.success);
 
   const rows = results
-    .map((r) => {
-      const label =
-        r.status === 'approved'
-          ? '✅ Auto-approved (live)'
-          : r.status === 'pending_review'
-          ? '⚠️ Needs your review'
-          : `❌ Failed (${r.status})`;
-      return `<li><strong>${r.keyword}</strong> — ${label}</li>`;
-    })
-    .join('');
+  .map((r) => {
+    const label =
+      r.status === 'pending_review'
+        ? '⚠️ Needs your review'
+        : `❌ Failed (${r.status})`;
+    return `<li><strong>${r.keyword}</strong> — ${label}</li>`;
+  })
+  .join('');
 
   const html = `
-    <div style="font-family: sans-serif; max-width: 600px;">
-      <h2>RankinSEO — Daily Auto-Generation Summary</h2>
-      <p>${results.length} article(s) attempted · ${approved.length} auto-approved · ${pending.length} pending review · ${failed.length} failed.</p>
-      <ul>${rows}</ul>
-      <p><a href="https://rankinseo.xyz/dashboard">Open Dashboard</a></p>
-    </div>
-  `;
+  <div style="font-family: sans-serif; max-width: 600px;">
+    <h2>RankinSEO — Daily Auto-Generation Summary</h2>
+    <p>${results.length} article(s) attempted · ${pending.length} pending review · ${failed.length} failed.</p>
+    <ul>${rows}</ul>
+    <p><a href="https://rankinseo.xyz/dashboard">Open Dashboard</a></p>
+  </div>
+`;
 
-  try {
-    await resend.emails.send({
-      from: 'onboarding@resend.dev',
-      to: toEmail,
-      subject: `RankinSEO: ${approved.length} live, ${pending.length} need review`,
-      html,
-    });
-  } catch (err) {
-    logger.error({ event: 'cron_email_send_failed', requestId, error: err instanceof Error ? err.message : String(err) });
-  }
+try {
+  await resend.emails.send({
+    from: 'onboarding@resend.dev',
+    to: toEmail,
+    subject: `RankinSEO: ${pending.length} article(s) need review`,
+    html,
+  });
+} catch (err) {
+  logger.error({ event: 'cron_email_send_failed', requestId, error: err instanceof Error ? err.message : String(err) });
 }
+} 
 
 async function handleAutoGenerate(req: Request) {
   const requestId = randomUUID();
