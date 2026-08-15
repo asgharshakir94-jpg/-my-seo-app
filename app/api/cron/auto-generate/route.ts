@@ -176,6 +176,7 @@ async function generateOneArticle(openai: OpenAI, keywordRow: { id: number; keyw
       status: 'generating',
       brief: brief || null,
       unverified_claims: brief?.unverified_claims || null,
+      user_id: '2ad0b4b3-762f-4087-89f3-c8ad23e490ed',
     })
     .select()
     .single();
