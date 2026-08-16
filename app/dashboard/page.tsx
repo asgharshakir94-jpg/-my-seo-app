@@ -32,7 +32,69 @@ export default function DashboardPage() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedScore, setSelectedScore] = useState<number | null>(null);
   const [selectedBreakdown, setSelectedBreakdown] = useState<any>(null);
+  const [showImageModal, setShowImageModal] = useState<boolean>(false);
+  const [imagePosition, setImagePosition] = useState<{ type: 'top' } | { type: 'afterHeading'; index: number }>({ type: 'top' });
+  const [imageQuery, setImageQuery] = useState<string>("");
+  const [imageResults, setImageResults] = useState<any[]>([]);
+  const [imageSearching, setImageSearching] = useState<boolean>(false);
+  const [insertingImageId, setInsertingImageId] = useState<string | null>(null);
   const router = useRouter();
+
+  const extractHeadings = (html: string): string[] => {
+    const matches = [...html.matchAll(/<h2[^>]*>(.*?)<\/h2>/gi)];
+    return matches.map(m => m[1].replace(/<[^>]+>/g, '').trim());
+  };
+
+  const handleImageSearch = async () => {
+    const query = imageQuery.trim() || targetKeyword;
+    if (!query) return;
+    setImageSearching(true);
+    setImageResults([]);
+    try {
+      const res = await fetch(`/api/unsplash/search?query=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      if (Array.isArray(data.results)) setImageResults(data.results);
+    } catch (err) {
+      alert("Image search failed.");
+    } finally {
+      setImageSearching(false);
+    }
+  };
+
+  const handleInsertImage = async (photo: any) => {
+    if (!selectedId) return;
+    setInsertingImageId(photo.id);
+    try {
+      const res = await fetch('/api/campaigns/insert-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: selectedId,
+          position: imagePosition,
+          imageUrl: photo.fullUrl,
+          alt: photo.alt,
+          credit: photo.credit,
+          creditUrl: photo.creditUrl,
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Failed to insert image.");
+        return;
+      }
+      setSelectedHtml(data.content);
+      setSelectedScore(data.seo_score);
+      setSelectedBreakdown(data.seo_score_breakdown);
+      setCampaigns(prev => prev.map(c => c.id === selectedId ? { ...c, seo_score: data.seo_score, seo_score_breakdown: data.seo_score_breakdown } : c));
+      setShowImageModal(false);
+      setImageResults([]);
+      setImageQuery("");
+    } catch (err) {
+      alert("Network error inserting image.");
+    } finally {
+      setInsertingImageId(null);
+    }
+  };
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -265,6 +327,14 @@ export default function DashboardPage() {
                 </h2>
               </div>
               <div className="flex gap-2">
+                {selectedId && (
+                  <button
+                    onClick={() => { setImagePosition({ type: 'top' }); setImageQuery(targetKeyword); setShowImageModal(true); }}
+                    className="px-4 py-2 text-xs font-bold text-ink rounded-md border border-line bg-paper hover:border-sand active:scale-95 transition-all"
+                  >
+                    + Add Image
+                  </button>
+                )}
                 {selectedStatus === 'pending_review' && (
                   <button
                     onClick={handleApprove}
@@ -274,7 +344,6 @@ export default function DashboardPage() {
                     {approving ? "Approving..." : "Approve for Export"}
                   </button>
                 )}
-                
               </div>
             </div>
 
@@ -323,6 +392,72 @@ export default function DashboardPage() {
           </div>
         </div>
       </main>
+
+      {showImageModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowImageModal(false)}>
+          <div className="bg-surface border border-line rounded-lg p-4 w-full max-w-2xl max-h-[80vh] flex flex-col shadow-flat" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-sm font-bold text-ink">Add Image from Unsplash</h3>
+              <button onClick={() => setShowImageModal(false)} className="text-slate hover:text-ink text-sm">✕</button>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-2 mb-3">
+              <select
+                value={imagePosition.type === 'top' ? 'top' : String(imagePosition.index)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setImagePosition(val === 'top' ? { type: 'top' } : { type: 'afterHeading', index: Number(val) });
+                }}
+                className="bg-paper border border-line rounded-md px-3 py-2 text-xs text-ink focus:outline-none focus:ring-2 focus:ring-accent-from/30"
+              >
+                <option value="top">Top of article</option>
+                {extractHeadings(selectedHtml).map((heading, i) => (
+                  <option key={i} value={i}>After: {heading.slice(0, 40)}</option>
+                ))}
+              </select>
+              <input
+                type="text"
+                placeholder="Search Unsplash..."
+                value={imageQuery}
+                onChange={(e) => setImageQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleImageSearch()}
+                className="flex-1 bg-paper border border-line rounded-md px-3 py-2 text-xs text-ink placeholder-sand focus:outline-none focus:ring-2 focus:ring-accent-from/30"
+              />
+              <button
+                onClick={handleImageSearch}
+                disabled={imageSearching}
+                className="bg-gradient-to-r from-accent-from to-accent-to text-white text-xs font-bold px-4 py-2 rounded-md disabled:opacity-60"
+              >
+                {imageSearching ? "Searching..." : "Search"}
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+              {imageResults.length === 0 ? (
+                <p className="text-xs text-sand italic text-center py-8">
+                  {imageSearching ? "Searching Unsplash..." : "Search for an image above."}
+                </p>
+              ) : (
+                <div className="grid grid-cols-3 gap-2">
+                  {imageResults.map((photo) => (
+                    <button
+                      key={photo.id}
+                      onClick={() => handleInsertImage(photo)}
+                      disabled={insertingImageId === photo.id}
+                      className="relative rounded-md overflow-hidden border border-line hover:border-accent-from transition-all disabled:opacity-50"
+                    >
+                      <img src={photo.thumbUrl} alt={photo.alt} className="w-full h-24 object-cover" />
+                      {insertingImageId === photo.id && (
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-[10px]">Adding...</div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
