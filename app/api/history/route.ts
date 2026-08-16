@@ -7,7 +7,7 @@ export async function GET() {
 
     const { data: campaigns, error } = await supabase
       .from('campaigns')
-      .select('id, keyword, created_at, content, status')
+      .select('id, keyword, created_at, content, status, seo_score, seo_score_breakdown')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -19,7 +19,9 @@ export async function GET() {
       keyword: item.keyword,
       created_at: item.created_at,
       html_content: item.content || "",
-      status: item.status || "pending_review"
+      status: item.status || "pending_review",
+      seo_score: item.seo_score ?? null,
+      seo_score_breakdown: item.seo_score_breakdown ?? null
     }));
 
     return NextResponse.json(formattedCampaigns || []);

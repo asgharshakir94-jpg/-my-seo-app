@@ -12,6 +12,13 @@ export default function DashboardPage() {
     return 'bg-yellow-500'; // pending_review or unknown
   };
 
+  const scoreColor = (score: number | null | undefined) => {
+    if (score === null || score === undefined) return 'bg-line text-slate';
+    if (score >= 80) return 'bg-green-600 text-white';
+    if (score >= 50) return 'bg-yellow-600 text-white';
+    return 'bg-red-600 text-white';
+  };
+
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [selectedHtml, setSelectedHtml] = useState<string>("");
   const [targetKeyword, setTargetKeyword] = useState<string>("");
@@ -23,6 +30,8 @@ export default function DashboardPage() {
   const [approving, setApproving] = useState<boolean>(false);
   const [selectedStatus, setSelectedStatus] = useState<string>("");
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedScore, setSelectedScore] = useState<number | null>(null);
+  const [selectedBreakdown, setSelectedBreakdown] = useState<any>(null);
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -56,6 +65,8 @@ export default function DashboardPage() {
     setSelectedHtml("");
     setSelectedStatus("");
     setSelectedId(null);
+    setSelectedScore(null);
+    setSelectedBreakdown(null);
     setTargetKeyword(inputKeyword);
 
     try {
@@ -98,6 +109,8 @@ export default function DashboardPage() {
         if (newest) {
           setSelectedId(newest.id);
           setSelectedStatus(newest.status || 'pending_review');
+          setSelectedScore(newest.seo_score ?? null);
+          setSelectedBreakdown(newest.seo_score_breakdown ?? null);
         }
       }
 
@@ -216,6 +229,8 @@ export default function DashboardPage() {
                       setTargetKeyword(item.keyword || "Untitled Campaign");
                       setSelectedStatus(item.status || "pending_review");
                       setSelectedId(item.id);
+                      setSelectedScore(item.seo_score ?? null);
+                      setSelectedBreakdown(item.seo_score_breakdown ?? null);
                     }}
                     className={`p-4 rounded-md border transition-all duration-150 cursor-pointer ${
                       targetKeyword === item.keyword
@@ -223,9 +238,16 @@ export default function DashboardPage() {
                         : 'bg-paper border-line hover:border-sand'
                     }`}
                   >
-                    <div className="flex justify-between items-start">
+                    <div className="flex justify-between items-start gap-2">
                       <p className={`font-semibold text-sm ${targetKeyword === item.keyword ? 'text-accent-text' : 'text-ink'}`}>{item.keyword}</p>
-                      <span className={`h-2 w-2 rounded-full mt-1 flex-shrink-0 ${statusColor(item.status)}`} title={item.status || 'pending_review'} />
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {item.seo_score !== null && item.seo_score !== undefined && (
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${scoreColor(item.seo_score)}`}>
+                            {item.seo_score}
+                          </span>
+                        )}
+                        <span className={`h-2 w-2 rounded-full mt-0.5 flex-shrink-0 ${statusColor(item.status)}`} title={item.status || 'pending_review'} />
+                      </div>
                     </div>
                     <p className="text-[11px] text-sand mt-2 font-mono">{item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Recent'}</p>
                   </div>
@@ -255,6 +277,39 @@ export default function DashboardPage() {
                 
               </div>
             </div>
+
+            {selectedScore !== null && selectedBreakdown && (
+              <div className="mb-4 p-3 rounded-md border border-line bg-paper">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold tracking-wider uppercase text-slate">SEO Score</span>
+                  <span className={`text-sm font-bold px-2 py-0.5 rounded ${scoreColor(selectedScore)}`}>
+                    {selectedScore}/100
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-[11px]">
+                  <div>
+                    <p className="text-slate">Words</p>
+                    <p className="font-semibold text-ink">{selectedBreakdown.wordCount}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate">Keyword density</p>
+                    <p className="font-semibold text-ink">{selectedBreakdown.keywordDensity}%</p>
+                  </div>
+                  <div>
+                    <p className="text-slate">Headings</p>
+                    <p className="font-semibold text-ink">{selectedBreakdown.headingCount}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate">Links</p>
+                    <p className="font-semibold text-ink">{selectedBreakdown.linkCount}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate">Images</p>
+                    <p className="font-semibold text-ink">{selectedBreakdown.imageCount}</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="flex-1 overflow-y-auto pr-1">
               {selectedHtml ? (
