@@ -50,6 +50,95 @@ function buildMetaDescription(keyword: string): string {
   return `${keyword.trim()} — practical, actionable guidance to help you get results. Learn what works and how to get started today.`.slice(0, 155);
 }
 
+// Fetches one relevant Unsplash photo for the article header.
+// Fails gracefully — if the API is down, rate-limited, or no results,
+// the article still generates and saves normally, just without an image.
+async function fetchArticleImage(keyword: string, requestId: string): Promise<{ url: string; alt: string; credit: string; creditUrl: string } | null> {
+  const accessKey = process.env.UNSPLASH_ACCESS_KEY;
+  if (!accessKey) {
+    logger.error({ event: 'unsplash_key_missing', requestId });
+    return null;
+  }
+
+  try {
+    const res = await fetch(
+      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(keyword)}&per_page=1&orientation=landscape`,
+      { headers: { Authorization: `Client-ID ${accessKey}` } }
+    );
+
+    if (!res.ok) {
+      logger.error({ event: 'unsplash_fetch_failed', requestId, status: res.status });
+      return null;
+    }
+
+    const data = await res.json();
+    const photo = data.results?.[0];
+    if (!photo) {
+      logger.info({ event: 'unsplash_no_results', requestId, keyword });
+      return null;
+    }
+
+    return {
+      url: photo.urls.regular,
+      alt: photo.alt_description || keyword,
+      credit: photo.user.name,
+      creditUrl: photo.user.links.html,
+    };
+  } catch (err) {
+    logger.error({ event: 'unsplash_fetch_error', requestId, error: err instanceof Error ? err.message : String(err) });
+    return null;
+  }
+}
+
+// Pure string parsing — no API call, no added latency or cost.
+// Scores the article the same way it's actually written today, honestly
+// reflecting missing links/images rather than pretending they exist.
+function computeArticleScore(html: string, keyword: string) {
+  const wordCount = html.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length;
+  const headingCount = (html.match(/<h[23][^>]*>/gi) || []).length;
+  const linkCount = (html.match(/<a\s+[^>]*href/gi) || []).length;
+  const imageCount = (html.match(/<img\s+[^>]*src/gi) || []).length;
+
+  const plainText = html.replace(/<[^>]+>/g, ' ').toLowerCase();
+  const keywordLower = keyword.toLowerCase();
+  const keywordOccurrences = keywordLower ? plainText.split(keywordLower).length - 1 : 0;
+  const keywordDensity = wordCount > 0 ? (keywordOccurrences / wordCount) * 100 : 0;
+
+  const wordCountScore = wordCount >= 900 && wordCount <= 1400
+    ? 100
+    : Math.max(0, 100 - Math.abs(1150 - wordCount) / 10);
+  const densityScore = keywordDensity >= 0.5 && keywordDensity <= 2.5
+    ? 100
+    : Math.max(0, 100 - Math.abs(1.5 - keywordDensity) * 20);
+  const headingScore = Math.min(100, headingCount * 20);
+  const linkScore = Math.min(100, linkCount * 25);
+  const imageScore = Math.min(100, imageCount * 34);
+
+  const total = Math.round(
+    wordCountScore * 0.25 +
+    densityScore * 0.25 +
+    headingScore * 0.2 +
+    linkScore * 0.15 +
+    imageScore * 0.15
+  );
+
+  return {
+    total,
+    breakdown: {
+      wordCount,
+      headingCount,
+      linkCount,
+      imageCount,
+      keywordDensity: Math.round(keywordDensity * 100) / 100,
+      wordCountScore: Math.round(wordCountScore),
+      densityScore: Math.round(densityScore),
+      headingScore,
+      linkScore,
+      imageScore,
+    },
+  };
+}
+
 const BRIEF_SYSTEM_PROMPT = `You are an SEO research assistant. Given a target keyword (and optional city/industry context), produce a structured content brief as raw JSON only — no markdown, no backticks, no commentary.
 
 The JSON must have this exact shape:
@@ -185,7 +274,11 @@ export async function POST(req: Request) {
 
     logger.info({ event: 'generation_started', requestId, keyword, city, industry, userId: user.id });
 
-    const brief = await generateBrief(openai, keyword, requestId, city, industry);
+    // Fetch brief and article image in parallel — independent calls, no reason to wait on one before the other
+    const [brief, articleImage] = await Promise.all([
+      generateBrief(openai, keyword, requestId, city, industry),
+      fetchArticleImage(keyword, requestId),
+    ]);
 
     // STEP 1.5: Create (or reuse) the campaign row up front
     let campaignRow;
@@ -270,20 +363,26 @@ ${JSON.stringify(brief, null, 2)}`
           }
 
           if (completeArticle) {
-            const finalArticle = `<h1>${seoTitle}</h1>\n${completeArticle}`;
+            const imageHtml = articleImage
+              ? `<img src="${articleImage.url}" alt="${articleImage.alt.replace(/"/g, '&quot;')}" style="width:100%;border-radius:8px;margin-bottom:0.5rem;" />\n<p style="font-size:0.8rem;color:#888;margin-bottom:1.5rem;">Photo by <a href="${articleImage.creditUrl}?utm_source=rankinseo&utm_medium=referral" target="_blank" rel="noopener">${articleImage.credit}</a> on <a href="https://unsplash.com?utm_source=rankinseo&utm_medium=referral" target="_blank" rel="noopener">Unsplash</a></p>\n`
+              : '';
+            const finalArticle = `<h1>${seoTitle}</h1>\n${imageHtml}${completeArticle}`;
+            const { total: seoScore, breakdown: seoScoreBreakdown } = computeArticleScore(finalArticle, keyword);
           
             const { error: saveErr } = await supabaseAdmin
               .from('campaigns')
               .update({
                 content: finalArticle,
                 status: 'pending_review',
+                seo_score: seoScore,
+                seo_score_breakdown: seoScoreBreakdown,
               })
               .eq('id', campaignRow.id);
               
               if (saveErr) {
                 logger.error({ event: 'article_save_failed', requestId, campaignId: campaignRow.id, error: saveErr.message });
               } else {
-                logger.info({ event: 'article_generated', requestId, campaignId: campaignRow.id, keyword, userId: user.id, wordCount: completeArticle.split(/\s+/).length });  
+                logger.info({ event: 'article_generated', requestId, campaignId: campaignRow.id, keyword, userId: user.id, wordCount: completeArticle.split(/\s+/).length, seoScore, hasImage: !!articleImage });  
               // Schedule risk scoring to run AFTER this response is fully sent.
               // Using after() means it can't block or get killed alongside the
               // client-facing stream — it runs as its own background task.
