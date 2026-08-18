@@ -185,14 +185,20 @@ async function runRiskScoringInBackground(openai: OpenAI, campaignId: number, co
     const finalStatus =
       riskResult.risk_score < RISK_THRESHOLD ? 'approved' : 'pending_review';
 
-    const { error: riskUpdateErr } = await supabaseAdmin
+      const { error: riskUpdateErr, data: riskUpdateData } = await supabaseAdmin
       .from('campaigns')
       .update({
         status: finalStatus,
         risk_score: riskResult.risk_score,
         risk_flags: riskResult.flags,
       })
-      .eq('id', campaignId);
+      .eq('id', campaignId)
+      .eq('status', 'pending_review')  // only touch it if still pending — don't clobber a manual approve
+      .select('id');
+    
+    if (riskUpdateData && riskUpdateData.length === 0) {
+      logger.info({ event: 'risk_score_skipped_already_actioned', requestId, campaignId });
+    }
 
       if (riskUpdateErr) {
         logger.error({ event: 'risk_score_save_failed', requestId, campaignId, error: riskUpdateErr.message });
