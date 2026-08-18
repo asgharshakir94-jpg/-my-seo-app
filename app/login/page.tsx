@@ -36,9 +36,8 @@ function LoginForm() {
       setError(error.message)
       return
     }
-
-    router.push(getSafeRedirect())
-    router.refresh()
+    
+    window.location.href = getSafeRedirect()
   }
 
   return (
