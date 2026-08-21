@@ -5,7 +5,7 @@ import { FeaturesSection } from '@/components/FeaturesSection';
 import SecuritySection from "@/components/SecuritySection";
 import PricingSection from "@/components/PricingSection";
 import FAQSection from "@/components/FAQSection";
-import CaseStudiesSection from "@/components/CaseStudiesSection";
+
 import Footer from '@/components/Footer';
 import FloatingRobotWidget from './FloatingRobotWidget';
 import { HeroVideo } from "@/components/HeroVideo";
@@ -75,7 +75,7 @@ export default function HomePageClient() {
         <SecuritySection />
         <PricingSection />
         <FAQSection />
-        <CaseStudiesSection />
+        
         <div className="bg-surface border border-line rounded-lg p-6 shadow-flat">
           <h2 className="text-lg font-bold text-ink mb-1">Get notified about new features</h2>
           <p className="text-sm text-slate mb-4">

@@ -42,7 +42,7 @@ export default function Nav() {
         </Link>
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium text-ink/80">
           <a href="#features" className="hover:text-ink transition-colors">What's Inside</a>
-          <a href="#case-studies" className="hover:text-ink transition-colors">Case Studies</a>
+          
           <a href="#pricing" className="hover:text-ink transition-colors">Pricing</a>
           <Link href="/blog" className="hover:text-ink transition-colors">Blog</Link>
           <a href="#security" className="hover:text-ink transition-colors">Security</a>
