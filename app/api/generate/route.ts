@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
 import { randomUUID } from 'crypto';
 import { computeArticleScore } from '@/lib/seoScore';
+import { matchTrade } from '@/lib/tradeCalculators';
 
 function slugify(text: string): string {
   return text
@@ -50,10 +51,7 @@ function buildSeoTitle(keyword: string): string {
 function buildMetaDescription(keyword: string): string {
   return `${keyword.trim()} — practical, actionable guidance to help you get results. Learn what works and how to get started today.`.slice(0, 155);
 }
-function isRoofingContent(keyword: string, industry?: string): boolean {
-  const text = `${keyword} ${industry || ''}`.toLowerCase();
-  return /\broof/.test(text);
-}
+
 
 // Fetches one relevant Unsplash photo for the article header.
 // Fails gracefully — if the API is down, rate-limited, or no results,
@@ -235,7 +233,7 @@ export async function POST(req: Request) {
     const slug = slugify(keyword);
     const seoTitle = buildSeoTitle(keyword);
     const metaDescription = buildMetaDescription(keyword);
-    const isRoofing = isRoofingContent(keyword, industry);
+    const matchedTrade = matchTrade(keyword, industry);
 
     logger.info({ event: 'generation_started', requestId, keyword, city, industry, userId: user.id });
 
@@ -314,8 +312,9 @@ ${JSON.stringify(brief, null, 2)}`
           4. Ensure an immediate, engaging hook in the introduction followed by highly actionable, clear structural subsections.
           5. Target 900-1200 words total. Do not exceed 1400 words under any circumstances. Prioritize clarity and actionable value over exhaustive coverage — cut anything that doesn't directly help the reader.
           6. Do NOT include an <h1> tag in your output — the page title is handled separately. Start directly with your intro paragraph, then use <h2> for section headers.
-          7. Always end the article with a clear call-to-action encouraging the reader to run a free SEO audit. Use this exact link and phrasing style: <p><strong>Ready to see how your site stacks up?</strong> <a href="/audit">Run a free SEO audit</a> and get a clear picture of what's holding your rankings back.</p>${isRoofing ? `
-          7b. Since this article is about roofing, immediately BEFORE the audit CTA from rule 7, insert this second CTA promoting the profit calculator, using this exact HTML: <p><strong>Curious if your pricing actually pencils out?</strong> Try our free <a href="/tools/roof-inspection-calculator">Roof Inspection Cost & Profit Margin Calculator</a> to see your real margin after labor, fuel, and overhead.</p>` : ''}
+          7. Always end the article with a clear call-to-action encouraging the reader to run a free SEO audit. Use this exact link and phrasing style: <p><strong>Ready to see how your site stacks up?</strong> <a href="/audit">Run a free SEO audit</a> and get a clear picture of what's holding your rankings back.</p>
+          ${matchedTrade ? `
+          7b. Since this article is about ${matchedTrade.tradeName.toLowerCase()}, immediately BEFORE the audit CTA from rule 7, insert this second CTA promoting the calculator, using this exact HTML: <p><strong>Curious if your pricing actually pencils out?</strong> Try our free <a href="/tools/${matchedTrade.slug}-calculator">${matchedTrade.tradeName} Cost & Profit Margin Calculator</a> to see your real margin after labor, fuel, and overhead.</p>` : ''}
           8. Do not reference or assume a specific city, county, or location unless one is explicitly provided as input. Never insert placeholder text like "[City, County, State]", "[Your City]", or similar. If the topic is location-independent or no location was given, write generically using phrases like "your area," "your region," or "local homeowners" instead.`       
           },
         { role: 'user', content: articleUserPrompt }

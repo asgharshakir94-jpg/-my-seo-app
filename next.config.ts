@@ -6,6 +6,15 @@ const nextConfig: NextConfig = {
     // your project has TypeScript errors.
     ignoreBuildErrors: true,
   },
+  async redirects() {
+    return [
+      {
+        source: '/tools/roof-inspection-calculator',
+        destination: '/tools/roofing-calculator',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
