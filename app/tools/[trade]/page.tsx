@@ -3,8 +3,15 @@ import { notFound } from 'next/navigation';
 import { TRADE_CALCULATORS } from '@/lib/tradeCalculators';
 import TradeCalculator from '@/components/TradeCalculator';
 
+function resolveTrade(slug: string) {
+  const key = slug.replace(/-calculator$/, '');
+  return TRADE_CALCULATORS[key] ? key : null;
+}
+
 export async function generateStaticParams() {
-  return Object.keys(TRADE_CALCULATORS).map((trade) => ({ trade }));
+  return Object.keys(TRADE_CALCULATORS).map((trade) => ({
+    trade: `${trade}-calculator`,
+  }));
 }
 
 export async function generateMetadata({
@@ -12,9 +19,10 @@ export async function generateMetadata({
 }: {
   params: Promise<{ trade: string }>;
 }): Promise<Metadata> {
-  const { trade } = await params;
-  const config = TRADE_CALCULATORS[trade];
-  if (!config) return {};
+  const { trade: slug } = await params;
+  const key = resolveTrade(slug);
+  if (!key) return {};
+  const config = TRADE_CALCULATORS[key];
   return { title: config.pageTitle, description: config.pageDescription };
 }
 
@@ -23,9 +31,10 @@ export default async function TradeCalculatorPage({
 }: {
   params: Promise<{ trade: string }>;
 }) {
-  const { trade } = await params;
-  const config = TRADE_CALCULATORS[trade];
-  if (!config) notFound();
+  const { trade: slug } = await params;
+  const key = resolveTrade(slug);
+  if (!key) notFound();
+  const config = TRADE_CALCULATORS[key];
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-12 md:py-16">
