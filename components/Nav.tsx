@@ -45,7 +45,7 @@ export default function Nav() {
           
           <a href="#pricing" className="hover:text-ink transition-colors">Pricing</a>
           <Link href="/blog" className="hover:text-ink transition-colors">Blog</Link>
-          <Link href="/tools/roofing-calculator" className="hover:text-ink transition-colors">Tools</Link>
+          <Link href="/tools" className="hover:text-ink transition-colors">Tools</Link>
           <a href="#security" className="hover:text-ink transition-colors">Security</a>
           <a href="#faq" className="hover:text-ink transition-colors">FAQ</a>
           <Link href="/contact" className="hover:text-ink transition-colors">Contact</Link>
