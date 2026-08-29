@@ -3,9 +3,18 @@
 import { useMemo, useState } from 'react';
 import type { TradeCalculatorConfig } from '@/lib/tradeCalculators';
 
+const CURRENCIES = {
+  USD: { code: 'USD', locale: 'en-US', symbol: '$' },
+  EUR: { code: 'EUR', locale: 'de-DE', symbol: '€' },
+  GBP: { code: 'GBP', locale: 'en-GB', symbol: '£' },
+} as const;
+
+type CurrencyKey = keyof typeof CURRENCIES;
+
 export default function TradeCalculator({ config }: { config: TradeCalculatorConfig }) {
   const { jobUnitLabel, defaults } = config;
 
+  const [currency, setCurrency] = useState<CurrencyKey>('USD');
   const [jobsPerMonth, setJobsPerMonth] = useState(defaults.jobsPerMonth);
   const [pricePerJob, setPricePerJob] = useState(defaults.pricePerJob);
   const [hoursPerJob, setHoursPerJob] = useState(defaults.hoursPerJob);
@@ -35,11 +44,27 @@ export default function TradeCalculator({ config }: { config: TradeCalculatorCon
         : 'Healthy margin';
   const clampedMargin = Math.max(0, Math.min(100, results.marginPct));
 
-  const fmt = (n: number) =>
-    n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+  const fmt = (n: number) => {
+    const { locale, code } = CURRENCIES[currency];
+    return n.toLocaleString(locale, { style: 'currency', currency: code, maximumFractionDigits: 0 });
+  };
+  const symbol = CURRENCIES[currency].symbol;
 
   return (
     <div className="w-full max-w-3xl mx-auto bg-surface border border-line rounded-2xl p-6 md:p-8">
+      <div className="flex justify-end mb-4">
+        <label className="text-sm text-ink/70 mr-2 self-center">Currency</label>
+        <select
+          value={currency}
+          onChange={(e) => setCurrency(e.target.value as CurrencyKey)}
+          className="rounded-lg border border-line bg-paper px-3 py-1.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent-from"
+        >
+          <option value="USD">USD ($)</option>
+          <option value="EUR">EUR (€)</option>
+          <option value="GBP">GBP (£)</option>
+        </select>
+      </div>
+
       <div className="grid md:grid-cols-2 gap-8">
         <div className="space-y-5">
           <div>
@@ -57,7 +82,7 @@ export default function TradeCalculator({ config }: { config: TradeCalculatorCon
 
           <div>
             <label className="block text-sm text-ink/70 mb-1">
-              Price per {jobUnitLabel} ($)
+              Price per {jobUnitLabel} ({symbol})
             </label>
             <input
               type="number"
@@ -83,7 +108,7 @@ export default function TradeCalculator({ config }: { config: TradeCalculatorCon
           </div>
 
           <div>
-            <label className="block text-sm text-ink/70 mb-1">Labor cost per hour ($)</label>
+            <label className="block text-sm text-ink/70 mb-1">Labor cost per hour ({symbol})</label>
             <input
               type="number"
               min={0}
@@ -95,7 +120,7 @@ export default function TradeCalculator({ config }: { config: TradeCalculatorCon
 
           <div>
             <label className="block text-sm text-ink/70 mb-1">
-              Vehicle / fuel cost per {jobUnitLabel} ($)
+              Vehicle / fuel cost per {jobUnitLabel} ({symbol})
             </label>
             <input
               type="number"
@@ -108,7 +133,7 @@ export default function TradeCalculator({ config }: { config: TradeCalculatorCon
 
           <div>
             <label className="block text-sm text-ink/70 mb-1">
-              Monthly overhead ($) — insurance, equipment, software
+              Monthly overhead ({symbol}) — insurance, equipment, software
             </label>
             <input
               type="number"
