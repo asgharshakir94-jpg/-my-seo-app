@@ -1,9 +1,4 @@
-// ❌ CHANGE THIS LINE:
-// import { supabaseAdmin } from '@/lib/supabase';
-
-//  TO THIS EXACT RELATIVE PATH:
 import { supabaseAdmin } from '../../../lib/supabase';
-
 
 export async function POST(req: Request) {
   try {
@@ -13,7 +8,9 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ error: 'Valid email is required' }), { status: 400 });
     }
 
-    const { error } = await supabaseAdmin.from('subscribers').insert({ email: email.trim().toLowerCase() });
+    const { error } = await supabaseAdmin
+      .from('subscribers')
+      .upsert({ email: email.trim().toLowerCase() }, { onConflict: 'email' });
 
     if (error) {
       console.error('Supabase insert error:', error);
