@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { TRADE_CALCULATORS } from '@/lib/tradeCalculators';
 import TradeCalculator from '@/components/TradeCalculator';
+import LeadMagnet from '@/components/LeadMagnet';
 
 function resolveTrade(slug: string) {
   const key = slug.replace(/-calculator$/, '');
@@ -45,6 +46,9 @@ export default async function TradeCalculatorPage({
         Work out what to charge per {config.jobUnitLabel} and see your real profit margin after labor, fuel, and overhead.
       </p>
       <TradeCalculator config={config} />
+      {key === 'roofing' && (
+        <LeadMagnet fileUrl="/downloads/roof-inspection-checklist.pdf" title="Roof Inspection Checklist" />
+      )}
     </main>
   );
 }
