@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
+import ShareButtons from '@/components/ShareButtons';
 
 function extractTitle(content: string | null, keyword: string) {
   if (content) {
@@ -99,6 +100,10 @@ export default async function BlogArticlePage({
             {stripFirstHeading(article.content)}
           </ReactMarkdown>
         </div>
+        <ShareButtons
+          title={pageTitle}
+          url={`https://rankinseo.xyz/blog/${article.slug}`}
+        />
     </article>
   )
 }
