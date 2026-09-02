@@ -9,6 +9,7 @@ import { logger } from '@/lib/logger';
 import { randomUUID } from 'crypto';
 import { computeArticleScore } from '@/lib/seoScore';
 import { matchTrade } from '@/lib/tradeCalculators';
+import { notifyGoogleIndexing } from '@/lib/googleIndexing';
 
 function slugify(text: string): string {
   return text
@@ -180,7 +181,7 @@ async function generateBrief(
 // Runs AFTER the response has been sent to the client, via Next.js's after().
 // This is intentionally decoupled from the stream lifecycle so a slow/failing
 // risk-scoring call can never block or kill the article save.
-async function runRiskScoringInBackground(openai: OpenAI, campaignId: number, completeArticle: string, requestId: string) {
+async function runRiskScoringInBackground(openai: OpenAI, campaignId: number, completeArticle: string, requestId: string, slug: string) {
   try {
     const RISK_THRESHOLD = 30; // tune after reviewing real score distribution
     const riskResult = await scoreArticleRisk(openai, completeArticle, requestId);
@@ -206,8 +207,13 @@ async function runRiskScoringInBackground(openai: OpenAI, campaignId: number, co
         logger.error({ event: 'risk_score_save_failed', requestId, campaignId, error: riskUpdateErr.message });
       } else {
         logger.info({ event: 'risk_scoring_completed', requestId, campaignId, status: finalStatus, riskScore: riskResult.risk_score });
-      }
-    } catch (err) {
+
+      
+        if (finalStatus === 'approved' && riskUpdateData && riskUpdateData.length > 0) {
+          after(() => notifyGoogleIndexing(`https://rankinseo.xyz/blog/${slug}`));
+        }
+       }  
+      } catch (err) {
       logger.error({ event: 'risk_scoring_background_failed', requestId, campaignId, error: err instanceof Error ? err.message : String(err) }); 
     // No-op: row is already saved as pending_review from Step A, safe to leave as-is.
   }
@@ -361,7 +367,7 @@ ${JSON.stringify(brief, null, 2)}`
               // Schedule risk scoring to run AFTER this response is fully sent.
               // Using after() means it can't block or get killed alongside the
               // client-facing stream — it runs as its own background task.
-              after(() => runRiskScoringInBackground(openai, campaignRow.id, finalArticle, requestId));
+              after(() => runRiskScoringInBackground(openai, campaignRow.id, finalArticle, requestId, slug));
             }
           }
 
