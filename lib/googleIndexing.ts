@@ -1,12 +1,10 @@
 import { google } from 'googleapis';
 
-const jwtClient = new google.auth.JWT(
-  process.env.GOOGLE_INDEXING_CLIENT_EMAIL,
-  undefined,
-  process.env.GOOGLE_INDEXING_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-  ['https://www.googleapis.com/auth/indexing']
-);
-
+const jwtClient = new google.auth.JWT({
+  email: process.env.GOOGLE_INDEXING_CLIENT_EMAIL,
+  key: process.env.GOOGLE_INDEXING_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  scopes: ['https://www.googleapis.com/auth/indexing'],
+});
 export async function notifyGoogleIndexing(url: string) {
   try {
     await jwtClient.authorize();
