@@ -1,10 +1,15 @@
 import { google } from 'googleapis';
 
+const privateKey = process.env.GOOGLE_INDEXING_PRIVATE_KEY
+  ? process.env.GOOGLE_INDEXING_PRIVATE_KEY.replace(/\\n/g, '\n').replace(/"/g, '')
+  : '';
+
 const jwtClient = new google.auth.JWT({
   email: process.env.GOOGLE_INDEXING_CLIENT_EMAIL,
-  key: process.env.GOOGLE_INDEXING_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-  scopes: ['https://www.googleapis.com/auth/indexing'],
+  key: privateKey,
+  scopes: ['https://googleapis.com'],
 });
+
 export async function notifyGoogleIndexing(url: string) {
   try {
     await jwtClient.authorize();
@@ -12,7 +17,7 @@ export async function notifyGoogleIndexing(url: string) {
 
     const res = await indexing.urlNotifications.publish({
       requestBody: {
-        url,
+        url: url,
         type: 'URL_UPDATED',
       },
     });
