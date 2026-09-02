@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabase';
 import { createClient } from '@/lib/supabase/server';
+import { notifyGoogleIndexing } from '@/lib/googleIndexing';
 
 export async function POST(req: Request) {
   try {
@@ -44,6 +45,10 @@ export async function POST(req: Request) {
         JSON.stringify({ error: 'No matching campaign found to approve (id/user mismatch).' }),
         { status: 404 }
       );
+    }
+
+    if (slug) {
+      await notifyGoogleIndexing(`https://rankinseo.xyz/blog/${slug}`);
     }
 
     return new Response(JSON.stringify({ success: true }), { status: 200 });
