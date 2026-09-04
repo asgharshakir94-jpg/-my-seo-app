@@ -32,11 +32,32 @@ export default function Footer() {
             aria-label="Facebook"
             className="text-slate hover:text-ink transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M22 12a10 10 0 1 0-11.5 9.87v-6.98H7.9V12h2.6V9.8c0-2.57 1.53-4 3.87-4 1.12 0 2.3.2 2.3.2v2.53h-1.3c-1.28 0-1.68.8-1.68 1.62V12h2.85l-.46 2.89h-2.4v6.98A10 10 0 0 0 22 12z"/>
-            </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M22 12a10 10 0 1 0-11.5 9.87v-6.98H7.9V12h2.6V9.8c0-2.57 1.53-4 3.87-4 1.12 0 2.3.2 2.3.2v2.53h-1.3c-1.28 0-1.68.8-1.68 1.62V12h2.85l-.46 2.89h-2.4v6.98A10 10 0 0 0 22 12z"/>
+          </svg>
           </a>
-          
+          <a href="https://www.youtube.com/@MAsgharShakir"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="YouTube"
+            className="text-slate hover:text-ink transition-colors"
+          >
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M23.5 6.2a3.02 3.02 0 0 0-2.12-2.14C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.38.56A3.02 3.02 0 0 0 .5 6.2 31.6 31.6 0 0 0 0 12a31.6 31.6 0 0 0 .5 5.8 3.02 3.02 0 0 0 2.12 2.14C4.5 20.5 12 20.5 12 20.5s7.5 0 9.38-.56a3.02 3.02 0 0 0 2.12-2.14A31.6 31.6 0 0 0 24 12a31.6 31.6 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6z"/>
+          </svg>
+          </a>
+
+          <a href="https://x.com/rankinseo"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="X"
+            className="text-slate hover:text-ink transition-colors"
+          >
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M18.9 2H22l-7.6 8.7L23.3 22h-6.9l-5.4-6.7L4.8 22H1.7l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L6.4 4H4.4l13.3 16z"/>
+          </svg>
+          </a>
+                      
           <a href="https://www.instagram.com/asghar.ironclad"
             target="_blank"
             rel="noopener noreferrer"
