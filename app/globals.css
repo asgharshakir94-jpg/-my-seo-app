@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap');
+
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
@@ -15,7 +15,7 @@
   --color-accent-soft: #E9F1EC;
   --color-accent-text: #1F5138;
 
-  --font-hand: 'Caveat', cursive;
+  --font-hand: var(--font-hand), cursive;
 
   --radius-sm: 8px;
   --radius-md: 12px;
