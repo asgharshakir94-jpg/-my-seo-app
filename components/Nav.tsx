@@ -42,13 +42,34 @@ export default function Nav() {
         </Link>
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium text-ink/80">
           <a href="#features" className="hover:text-ink transition-colors">What's Inside</a>
-          
+
           <a href="#pricing" className="hover:text-ink transition-colors">Pricing</a>
-          <Link href="/blog" className="hover:text-ink transition-colors">Blog</Link>
-          <Link href="/tools" className="hover:text-ink transition-colors">Tools</Link>
+          <Link
+            href="/blog"
+            className={`transition-colors ${
+              pathname?.startsWith("/blog") ? "text-accent-text font-semibold" : "hover:text-ink"
+            }`}
+          >
+            Blog
+          </Link>
+          <Link
+            href="/tools"
+            className={`transition-colors ${
+              pathname?.startsWith("/tools") ? "text-accent-text font-semibold" : "hover:text-ink"
+            }`}
+          >
+            Tools
+          </Link>
           <a href="#security" className="hover:text-ink transition-colors">Security</a>
           <a href="#faq" className="hover:text-ink transition-colors">FAQ</a>
-          <Link href="/contact" className="hover:text-ink transition-colors">Contact</Link>
+          <Link
+            href="/contact"
+            className={`transition-colors ${
+              pathname?.startsWith("/contact") ? "text-accent-text font-semibold" : "hover:text-ink"
+            }`}
+          >
+            Contact
+          </Link>
         </nav>
         <div className="flex items-center gap-4">
           {!isDashboard && isLoggedIn === true && (
