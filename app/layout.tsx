@@ -22,8 +22,8 @@ const caveat = Caveat({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://rankinseo.xyz"),
-  title: "RankinSEO - AI-Powered SEO Article Generation & Publishing",
-  description: "Automate SEO content creation with AI. Generate and publish optimized articles that rank.",
+  title: "RankinSEO - Done-For-You SEO for Roofers, HVAC, Solar & Plumbing Companies",
+  description: "RankinSEO is a done-for-you SEO SaaS built for trades businesses. No dashboard to learn — we research keywords, write optimized articles, and auto-publish 3-5 SEO articles a week so you get found on Google without touching a keyboard.",
   alternates: {
     canonical: "/",
   },

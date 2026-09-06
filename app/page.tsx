@@ -1,10 +1,10 @@
 import HomePageClient from '@/components/HomePageClient';
 
 export const metadata = {
-   title: "RankinSEO | AI-Powered SEO Content for Trades Businesses",
+  title: "RankinSEO | Done-For-You SEO SaaS for Roofers, HVAC, Solar & Plumbing Companies",
   description:
-      "AI-powered SEO content for trades businesses — auto-researched, written, and published to grow your traffic.",
-  };
+    "RankinSEO is a done-for-you SEO SaaS built for trades businesses. No dashboard to learn — we research keywords, write optimized articles, and auto-publish 3-5 SEO articles a week so you get found on Google without touching a keyboard.",
+};
 
 export default function Page() {
   return <HomePageClient />;
