@@ -17,6 +17,11 @@ const nextConfig: NextConfig = {
         destination: '/tools/roofing-calculator',
         permanent: true,
       },
+      {
+        source: '/blog/how-to-spot-roofstorm-damage',
+        destination: '/blog/how-to-spot-roof-storm-damage',
+        permanent: true,
+      },  
     ];
   },
 };
