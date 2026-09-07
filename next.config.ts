@@ -27,6 +27,11 @@ const nextConfig: NextConfig = {
         destination: '/blog/roof-maintenance-check-list-for-homeowners',
         permanent: true,
       }, 
+      {
+        source: '/blog/roofing-inspection-cost',
+        destination: '/blog/roof-inspection-cost',
+        permanent: true,
+      },
     ];
   },
 };
