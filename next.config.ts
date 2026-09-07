@@ -38,7 +38,7 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
-        source: '/blog//roofing-near-me',
+        source: '/blog/roofing-near-me',
         destination: '/blog/roofing-contractor-near-me',
         permanent: true,
       },
