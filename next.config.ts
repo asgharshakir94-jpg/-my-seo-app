@@ -32,6 +32,21 @@ const nextConfig: NextConfig = {
         destination: '/blog/roof-inspection-cost',
         permanent: true,
       },
+      {
+        source: '/blog/roofing-company-near-me',
+        destination: '/blog/roofing-contractor-near-me',
+        permanent: true,
+      },
+      {
+        source: '/blog//roofing-near-me',
+        destination: '/blog/roofing-contractor-near-me',
+        permanent: true,
+      },
+      {
+        source:  '/blog/roofing-contractors-near-me',
+        destination: '/blog/roofing-contractor-near-me',
+        permanent: true,
+      },
     ];
   },
 };
