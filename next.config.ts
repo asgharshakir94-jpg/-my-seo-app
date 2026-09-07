@@ -21,7 +21,12 @@ const nextConfig: NextConfig = {
         source: '/blog/how-to-spot-roofstorm-damage',
         destination: '/blog/how-to-spot-roof-storm-damage',
         permanent: true,
-      },  
+      }, 
+      {
+        source: '/blog/roof-maintenance-checklist-for-homeowners',
+        destination: '/blog/roof-maintenance-check-list-for-homeowners',
+        permanent: true,
+      }, 
     ];
   },
 };
