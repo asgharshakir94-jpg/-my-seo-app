@@ -47,6 +47,11 @@ const nextConfig: NextConfig = {
         destination: '/blog/roofing-contractor-near-me',
         permanent: true,
       },
+      {
+        source: '/blog/commercial-roofing-contractors',
+        destination: '/blog/commercial-roofing-company',
+        permanent: true,
+      },
     ];
   },
 };
