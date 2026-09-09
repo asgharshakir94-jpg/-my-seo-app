@@ -35,6 +35,22 @@ export default function ToolsIndexPage() {
           </Link>
         ))}
       </div>
+      <div className="mt-12">
+  <h2 className="text-xl font-semibold text-ink mb-4">More free tools</h2>
+  <div className="grid gap-4 sm:grid-cols-2">
+    <Link
+      href="/tools/schema-generator"
+      className="block rounded-lg border border-line bg-surface p-5 hover:border-accent-from transition-colors"
+    >
+      <h3 className="text-lg font-medium text-ink mb-1">
+        Local Business Schema Generator
+      </h3>
+      <p className="text-sm text-ink/70">
+        Generate a LocalBusiness JSON-LD schema in seconds — free, no sign-up.
+      </p>
+    </Link>
+  </div>
+</div>
     </main>
   );
 }
