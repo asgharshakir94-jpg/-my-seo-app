@@ -138,13 +138,12 @@ export function LocalSchemaGenerator() {
           Local Business Schema Generator
         </h1>
         <p className="text-base md:text-lg text-ink/70 max-w-2xl mx-auto">
-          Generate a perfectly structured{' '}
-          <strong>LocalBusiness JSON-LD schema</strong> in seconds. Paste it into
-          your website&apos;s{' '}
-          <code className="text-xs bg-paper border border-line rounded px-1.5 py-0.5">
-            {'<head>'}
-          </code>{' '}
-          to help Google and AI engines understand your business.
+        Generate a perfectly structured <strong>LocalBusiness JSON-LD schema</strong>{' '}
+        in seconds. Paste it into your website&apos;s{' '}
+        <code className="text-sm bg-paper border border-line rounded px-1.5 py-0.5 align-middle">
+        {'<head>'}
+        </code>
+        to help Google and AI engines understand your business.
         </p>
       </div>
 
