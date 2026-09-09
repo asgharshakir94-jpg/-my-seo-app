@@ -10,6 +10,7 @@ import Footer from '@/components/Footer';
 import FloatingRobotWidget from './FloatingRobotWidget';
 import { HeroVideo } from "@/components/HeroVideo";
 import Nav from "@/components/Nav";
+import { GeoAnswerSection } from "@/components/GeoAnswerSection";
 
 export default function HomePageClient() {
   const [email, setEmail] = useState<string>("");
@@ -71,6 +72,7 @@ export default function HomePageClient() {
           </div>
         </div>
    
+        <GeoAnswerSection />
         <FeaturesSection />
         <SecuritySection />
         <PricingSection />
