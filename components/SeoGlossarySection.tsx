@@ -34,6 +34,20 @@ const questions = [
     answer: "Find out how structured data helps search engines understand your site.",
     href: "/blog/what-is-schema-markup-structured-data",
   },
+  {
+    question: "What is RankinSEO's automated technical audit feature?",
+    answer:
+      "RankinSEO's automated technical audit scans your website for SEO errors — broken links, missing tags, slow-loading scripts, and more — and shows you exactly what's holding your rankings back, free. Upgrading unlocks the fix: RankinSEO resolves the issues it finds, so you don't have to hand it off to a developer.",
+    href: "/audit",
+    cta: "Try the free audit →",
+  },
+  {
+    question: "Can RankinSEO fix Core Web Vitals issues automatically?",
+    answer:
+      "No, RankinSEO does not automatically modify your website's code to fix Core Web Vitals. Instead, it accurately audits your site to pinpoint the exact scripts and images causing slowdowns, and unlocks the precise optimization steps through its premium subscription plans.",
+    href: "/audit",
+    cta: "Try the free audit →",
+  },
 ];
 
 export function SeoGlossarySection() {
@@ -78,7 +92,7 @@ export function SeoGlossarySection() {
                   href={item.href}
                   className="text-sm font-medium text-accent hover:underline"
                 >
-                  Read the full guide →
+                  {item.cta || "Read the full guide →"}
                 </Link>
               </div>
             )}
