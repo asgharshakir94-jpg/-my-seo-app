@@ -42,3 +42,7 @@ next-env.d.ts
 
 .vercel
 /backups
+
+ # One-off maintenance scripts 
+ /*.mjs 
+ !next.config.mjs !postcss.config.mjs !eslint.config.mjs
