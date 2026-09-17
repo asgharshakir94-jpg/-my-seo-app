@@ -4,25 +4,25 @@ import { createClient } from '@/lib/supabase/server';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     {
-      url: 'https://rankinseo.xyz',
+      url: 'https://rankinseo.xyz', // Added /
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 1,
     },
     {
-      url: 'https://rankinseo.xyz/quiz',
+      url: 'https://rankinseo.xyzquiz/', // Added /
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
-      url: 'https://rankinseo.xyz/plan',
+      url: 'https://rankinseo.xyzplan/', // Added /
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
-      url: 'https://rankinseo.xyz/blog',
+      url: 'https://rankinseo.xyzblog/', // Added /
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.7,
@@ -37,7 +37,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .not('slug', 'is', null);
 
   const blogRoutes: MetadataRoute.Sitemap = (articles ?? []).map((article) => ({
-    url: `https://rankinseo.xyz/blog/${article.slug}`,
+    // Added trailing slash here after the slug variable 👇
+    url: `https://rankinseo.xyz/blog/${article.slug}/`, 
     lastModified: new Date(article.created_at),
     changeFrequency: 'monthly',
     priority: 0.6,
