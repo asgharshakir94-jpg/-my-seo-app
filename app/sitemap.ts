@@ -4,25 +4,25 @@ import { createClient } from '@/lib/supabase/server';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     {
-      url: 'https://rankinseo.xyz', // Added /
+      url: 'https://rankinseo.xyz',
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 1,
     },
     {
-      url: 'https://rankinseo.xyzquiz/', // Added /
+      url: 'https://rankinseo.xyz/quiz/',
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
-      url: 'https://rankinseo.xyzplan/', // Added /
+      url: 'https://rankinseo.xyz/plan/',
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
-      url: 'https://rankinseo.xyzblog/', // Added /
+      url: 'https://rankinseo.xyz/blog/',
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.7,
