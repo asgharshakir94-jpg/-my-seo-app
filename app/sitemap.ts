@@ -36,10 +36,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const SUPABASE_REST_URL = "https://supabase.co";
     
-    // 🌟 Hardcode your long-string Supabase Anon Key here to bypass environment mapping failures
-    const PUBLIC_ANON_KEY = "PASTE_YOUR_ACTUAL_LONG_SUPABASE_ANON_KEY_HERE";
+    // 🌟 Place your actual long anon string key inside these double quotes:
+    const PUBLIC_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxdXpybGNubHZ4Z3NreHZ0cGhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNTgyMTIsImV4cCI6MjA5ODYzNDIxMn0.1H_UB7tS4tJDU9WciPfnM33MlHZeV3r3doXx4qcS4a0";
 
-    if (PUBLIC_ANON_KEY && PUBLIC_ANON_KEY !== "PASTE_YOUR_ACTUAL_LONG_SUPABASE_ANON_KEY_HERE") {
+    // Simplified connection structure - no duplicate check lines to cause underlines
+    if (PUBLIC_ANON_KEY) {
       const res = await fetch(SUPABASE_REST_URL, {
         headers: {
           "apikey": PUBLIC_ANON_KEY,
@@ -53,7 +54,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         
         blogRoutes = (articles ?? []).map((article: any) => ({
           url: `https://rankinseo.xyz/${article.slug}`, 
-          lastModified: new Date(article.created_at),
+          lastModified: new Date(article.created_at || new Date()),
           changeFrequency: 'monthly',
           priority: 0.6,
         }));
