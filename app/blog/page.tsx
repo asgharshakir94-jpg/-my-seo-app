@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import BackToTop from '@/components/backToTop';
 
 export const dynamic = 'force-dynamic'
-export const revalidate = 3600
+export const revalidate = 0 // 🌟 Instantly flushes the cache on every refresh
 
 // Reads your environment tags saved in Vercel
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || ''
