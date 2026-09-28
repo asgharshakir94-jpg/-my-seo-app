@@ -32,4 +32,11 @@ async function getGoogleSuggestions(seedKeyword) {
   }
 }
 
-getGoogleSuggestions("roof repair Houston");
+const seedKeyword = process.argv.slice(2).join(" ").trim();
+
+if (!seedKeyword) {
+  console.error('Usage: npm run scrape-keywords -- "roof repair Houston"');
+  process.exit(1);
+}
+
+getGoogleSuggestions(seedKeyword);
