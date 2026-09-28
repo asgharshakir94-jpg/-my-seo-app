@@ -1,79 +1,80 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import BackToTop from "@/components/backToTop";
+import BackToTop from '@/components/backToTop';
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 3600
-export const metadata = {
-  title: 'Blog | RankinSEO',
-  description: 'Roofing, solar, and trades industry guides and insights.',
-}
 
 function extractTitle(content: string | null, keyword: string): string {
-  if (content) {
-    const match = content.match(/<h[12][^>]*>(.*?)<\/h[12]>/i)
-    if (match) {
-      const heading = match[1].replace(/<[^>]+>/g, '').trim()
-      // Skip numbered-list-style headings (e.g. "1. Your Website Has No Fresh Content")
-      // — these are list items picked up from body content, not the real article title
-      if (!/^\d+[\.\)]\s/.test(heading)) {
-        return heading
-      }
+    if (content) {
+        const match = content.match(/<(h[12])[^>]*>(.*?)<\/\h[12]>/);
+        if (match) {
+            const heading = match[2].replace(/<[^>]*>/g, "").trim();
+            if (/^\d+[\.\-\)]\s/.test(heading)) {
+                return heading;
+            }
+        }
     }
-  }
-  return keyword.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+    return keyword.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
+
 function stripFirstHeading(content: string | null) {
-  if (!content) return ''
-  return content.replace(/<h[12][^>]*>.*?<\/h[12]>/i, '')
+    if (!content) return '';
+    return content.replace(/<(h[12])[^>]*>.*?<\/\h[12]>/, '');
 }
 
 function excerpt(content: string | null, length = 160) {
-  const stripped = stripFirstHeading(content)
-  const text = stripped.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
-  return text.length > length ? text.slice(0, length).trim() + '…' : text
+    const stripped = stripFirstHeading(content);
+    const text = stripped.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+    return text.length > length ? text.slice(0, length).trim() + '...' : text;
 }
 
 export default async function BlogIndexPage() {
-  const supabase = await createClient()
+    const supabase = await createClient()
 
-  const { data: articles } = await supabase
-    .from('campaigns')
-    .select('id, keyword, slug, meta_description, content, created_at')
-    .in('status', ['approved', 'exported'])
-    .not('slug', 'is', null)
-    .order('created_at', { ascending: false })
+    // 1. Fetch all published rows from your campaign table
+    const { data: articles, error } = await supabase
+        .from('campaign')
+        .select('id, slug, keyword, content, created_at')
+        .order('created_at', { ascending: false });
 
-  return (
-    <div className="max-w-5xl mx-auto px-6 py-16">
-      <h1 className="text-3xl font-semibold tracking-tight mb-2">Blog</h1>
-      <p className="text-ink/60 mb-12">
-        Guides and insights for roofing, solar, and trades businesses.
-      </p>
+    if (error || !articles) {
+        console.error("Supabase error fetching directory articles:", error);
+        return <div className="p-8">Error loading directory content.</div>;
+    }
 
-      {(!articles || articles.length === 0) && (
-        <p className="text-ink/60">No articles published yet — check back soon.</p>
-      )}
-
-      <div className="grid gap-8 sm:grid-cols-2">
-        {articles?.map((article) => (
-          <Link
-            key={article.id}
-            href={`/blog/${article.slug}`}
-            className="block rounded-lg border border-line bg-surface p-6 border-l-4 border-l-transparent hover:border-l-accent-from hover:border-ink/30 transition-colors"
-          >
-            <span className="inline-block h-2 w-2 rounded-full bg-gradient-to-r from-accent-from to-accent-to mb-2" />
-            <h2 className="text-lg font-semibold mb-2">
-              {extractTitle(article.content, article.keyword)}
-            </h2>
-            <p className="text-sm text-ink/60 line-clamp-3">
-              {article.meta_description || excerpt(article.content)}
+    return (
+        <main className="max-w-4xl mx-auto px-6 py-12 font-sans">
+            <h1 className="text-3xl font-bold text-slate-900 border-b pb-4 mb-2">
+                RankinSEO Site Directory
+            </h1>
+            <p className="text-slate-600 mb-8">
+                Browse our complete, automated local optimization index ({articles.length} campaigns active):
             </p>
-          </Link>
-        ))}
-      </div>
-      <BackToTop />
-    </div>
 
-  )
+            {/* 2. Render all 145 items as static HTML links for Google Bots */}
+            <ul className="space-y-4 list-none p-0">
+                {articles.map((art) => {
+                    // Extract the clean human title using your existing pipeline logic
+                    const displayTitle = extractTitle(art.content, art.keyword || 'SEO Campaign');
+                    
+                    return (
+                        <li key={art.id} className="border-b border-slate-100 pb-3">
+                            <Link 
+                                href={`/blog/${art.slug}`}
+                                className="text-blue-600 hover:underline font-semibold text-lg block"
+                            >
+                                {displayTitle}
+                            </Link>
+                            <p className="text-sm text-slate-500 mt-1 line-clamp-2">
+                                {excerpt(art.content)}
+                            </p>
+                        </li>
+                    );
+                })}
+            </ul>
+
+            <BackToTop />
+        </main>
+    )
 }
