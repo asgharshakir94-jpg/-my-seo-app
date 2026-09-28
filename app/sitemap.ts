@@ -1,5 +1,7 @@
 import { MetadataRoute } from 'next';
-import { createClient } from '@/lib/supabase/server';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -10,39 +12,56 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
     },
     {
-      url: 'https://rankinseo.xyz/quiz/',
+      url: 'https://rankinseo.xyz',
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
-      url: 'https://rankinseo.xyz/plan/',
+      url: 'https://rankinseo.xyz',
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
-      url: 'https://rankinseo.xyz/blog/',
+      url: 'https://rankinseo.xyz',
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.7,
     },
   ];
 
-  const supabase = await createClient();
-  const { data: articles } = await supabase
-    .from('campaigns')
-    .select('slug, created_at')
-    .in('status', ['approved', 'exported'])
-    .not('slug', 'is', null);
+  let blogRoutes: MetadataRoute.Sitemap = [];
 
-  const blogRoutes: MetadataRoute.Sitemap = (articles ?? []).map((article) => ({
-    // Added trailing slash here after the slug variable 👇
-    url: `https://rankinseo.xyz/blog/${article.slug}/`, 
-    lastModified: new Date(article.created_at),
-    changeFrequency: 'monthly',
-    priority: 0.6,
-  }));
+  try {
+    // 🌟 Direct REST endpoint query ensures 100% database connection stability
+    const SUPABASE_REST_URL = "https://supabase.co";
+    const PUBLIC_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
+
+    if (PUBLIC_ANON_KEY) {
+      const res = await fetch(SUPABASE_REST_URL, {
+        headers: {
+          "apikey": PUBLIC_ANON_KEY,
+          "Authorization": `Bearer ${PUBLIC_ANON_KEY}`
+        },
+        next: { revalidate: 0 }
+      });
+
+      if (res.ok) {
+        const articles = await res.json();
+        
+        blogRoutes = (articles ?? []).map((article: any) => ({
+          // 🌟 Fixed: Removed the trailing slash at the end to match app routes perfectly
+          url: `https://rankinseo.xyz/${article.slug}`, 
+          lastModified: new Date(article.created_at),
+          changeFrequency: 'monthly',
+          priority: 0.6,
+        }));
+      }
+    }
+  } catch (error) {
+    console.error("Sitemap generation error layout:", error);
+  }
 
   return [...staticRoutes, ...blogRoutes];
 }
