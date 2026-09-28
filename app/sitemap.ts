@@ -34,11 +34,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let blogRoutes: MetadataRoute.Sitemap = [];
 
   try {
-    // 🌟 Direct REST endpoint query ensures 100% database connection stability
     const SUPABASE_REST_URL = "https://supabase.co";
-    const PUBLIC_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
+    
+    // 🌟 Hardcode your long-string Supabase Anon Key here to bypass environment mapping failures
+    const PUBLIC_ANON_KEY = "PASTE_YOUR_ACTUAL_LONG_SUPABASE_ANON_KEY_HERE";
 
-    if (PUBLIC_ANON_KEY) {
+    if (PUBLIC_ANON_KEY && PUBLIC_ANON_KEY !== "PASTE_YOUR_ACTUAL_LONG_SUPABASE_ANON_KEY_HERE") {
       const res = await fetch(SUPABASE_REST_URL, {
         headers: {
           "apikey": PUBLIC_ANON_KEY,
@@ -51,7 +52,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         const articles = await res.json();
         
         blogRoutes = (articles ?? []).map((article: any) => ({
-          // 🌟 Fixed: Removed the trailing slash at the end to match app routes perfectly
           url: `https://rankinseo.xyz/${article.slug}`, 
           lastModified: new Date(article.created_at),
           changeFrequency: 'monthly',
