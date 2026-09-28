@@ -3,27 +3,23 @@ import { createClient } from '@supabase/supabase-js'
 import BackToTop from '@/components/backToTop';
 
 export const dynamic = 'force-dynamic'
-export const revalidate = 0 // 🌟 Instantly flushes the cache on every refresh
+export const revalidate = 0 
 
-// Reads your environment tags saved in Vercel
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || ''
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || ''
 
 function extractTitle(content: string | null, keyword: string): string {
-  if (content) {
-      const match = content.match(/<(h)[^>]*>(.*?)<\/\h>/);
-      if (match && match[0]) {
-          // 🌟 Fixed: match[0] extracts the matched string safely for TypeScript
-          const heading = match[0].replace(/<[^>]*>/g, "").trim();
-          if (/^\d+[\.\-\)]\s/.test(heading)) {
-              return heading;
-          }
-          // Return the clean heading if it matches the text bounds
-          if (heading) return heading; 
-      }
-  }
-  // Fallback: capitalize the target keyword cleanly
-  return keyword.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    if (content) {
+        const match = content.match(/<(h)[^>]*>(.*?)<\/\h>/);
+        if (match && match[0]) {
+            const heading = match[0].replace(/<[^>]*>/g, "").trim();
+            if (/^\d+[\.\-\)]\s/.test(heading)) {
+                return heading;
+            }
+            if (heading) return heading; 
+        }
+    }
+    return keyword.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
 function stripFirstHeading(content: string | null) {
@@ -38,27 +34,33 @@ function excerpt(content: string | null, length = 160) {
 }
 
 export default async function BlogIndexPage() {
-    // Graceful warning fallback if credentials fail to map
     if (!supabaseUrl || !supabaseAnonKey) {
         return (
             <div className="p-8 max-w-xl mx-auto my-12 border border-red-200 bg-red-50 rounded-lg text-red-800 font-sans">
-                <h2 className="font-bold text-lg mb-2">Supabase Credentials Not Found</h2>
-                <p className="text-sm">Please verify your keys match environment naming metrics inside your dashboard settings.</p>
+                <h2 className="font-bold text-lg mb-2">Supabase Credentials Missing</h2>
+                <p className="text-sm text-slate-700">URL Length: {supabaseUrl.length} | Key Length: {supabaseAnonKey.length}</p>
+                <p className="text-xs text-slate-500 mt-2">Make sure your variables are saved inside Vercel Dashboard Settings.</p>
             </div>
         );
     }
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-    // Pull your data columns out of your campaign table
     const { data: articles, error } = await supabase
-        .from('campaign')
+        .from('campaigns')
         .select('id, slug, keyword, content, created_at')
         .order('created_at', { ascending: false });
 
+    // 🌟 Modified: Prints the exact database error message onto the viewport
     if (error || !articles) {
-        console.error("Supabase query details error:", error);
-        return <div className="p-8 font-sans">Error connecting to database. Verify your table configurations.</div>;
+        return (
+            <div className="p-8 max-w-2xl mx-auto my-12 border border-orange-200 bg-orange-50 rounded-lg text-orange-900 font-sans">
+                <h2 className="font-bold text-lg mb-2">Database Connection Diagnostic</h2>
+                <p className="text-sm font-semibold text-red-700">Message: {error?.message || "No data returned from query."}</p>
+                <p className="text-xs text-slate-600 mt-2">Details: {error?.details || "None"}</p>
+                <p className="text-xs text-slate-600">Code: {error?.code || "N/A"}</p>
+            </div>
+        );
     }
 
     return (
@@ -70,7 +72,6 @@ export default async function BlogIndexPage() {
                 Browse our complete, automated local optimization index ({articles.length} campaigns active):
             </p>
 
-            {/* Generates indexable server links for Google bots */}
             <ul className="space-y-4 list-none p-0">
                 {articles.map((art) => {
                     const displayTitle = extractTitle(art.content, art.keyword || 'SEO Campaign');
