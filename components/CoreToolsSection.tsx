@@ -31,6 +31,11 @@ const tools = [
     desc: "Scan your site for common SEO issues in seconds.",
     href: "/audit",
   },
+  {
+    title: "Free Backlink Seeker",
+    desc: "Crawl and analyze any domain to instantly discover active backlink connection metadata.",
+    href: "/tools/backlink-seeker",
+  },
 ];
 
 export function CoreToolsSection() {
@@ -44,7 +49,7 @@ export function CoreToolsSection() {
           Our Core Features
         </h2>
         <p className="mt-4 max-w-2xl mx-auto text-lg text-ink/70">
-          Price jobs accurately and find your real profit margin — no sign-up required.
+          Price jobs accurately, check optimization data, and find your real metrics — no sign-up required.
         </p>
       </div>
 
@@ -53,9 +58,11 @@ export function CoreToolsSection() {
           <Link
             key={tool.href}
             href={tool.href}
-            className="block bg-white rounded-2xl p-6 border border-line hover:border-accent transition-colors"
+            className="block bg-white rounded-2xl p-6 border border-line hover:border-accent transition-colors shadow-sm hover:shadow-md"
           >
-            <h3 className="font-semibold text-ink">{tool.title}</h3>
+            <h3 className="font-semibold text-ink flex items-center gap-2">
+              {tool.title} {tool.title === "Free Backlink Seeker" && <span className="text-xs bg-green-100 text-green-800 font-bold px-2 py-0.5 rounded-full">New</span>}
+            </h3>
             <p className="mt-2 text-sm text-ink/70">{tool.desc}</p>
           </Link>
         ))}
