@@ -23,12 +23,21 @@ export default function BacklinkChecker() {
         body: JSON.stringify({ targetUrl: url }),
       });
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Something went wrong');
-      
+      let data;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+      }
+
+      if (!response.ok) {
+        throw new Error(data?.message || 'Something went wrong');
+      }
+
       setResults(data);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Network error occurred');
     } finally {
       setLoading(false);
     }
@@ -59,21 +68,25 @@ export default function BacklinkChecker() {
         </button>
       </form>
 
-      {error && <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm mb-6">{error}</div>}
+      {error && (
+        <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm mb-6 border border-red-200">
+          ⚠️ {error}
+        </div>
+      )}
 
       {results && (
         <div className="border-t border-gray-200 pt-6">
           <div className="grid grid-cols-3 gap-4 text-center mb-6">
             <div className="p-3 bg-blue-50 rounded-lg">
-              <span className="block text-xl font-bold text-blue-700">{results.totalBacklinks}</span>
+              <span className="block text-xl font-bold text-blue-700">{results.totalBacklinks ?? 0}</span>
               <span className="text-xs text-gray-500 font-medium">Total Backlinks</span>
             </div>
             <div className="p-3 bg-green-50 rounded-lg">
-              <span className="block text-xl font-bold text-green-700">{results.domainAuthority}</span>
+              <span className="block text-xl font-bold text-green-700">{results.domainAuthority ?? 'N/A'}</span>
               <span className="text-xs text-gray-500 font-medium">Domain Authority</span>
             </div>
             <div className="p-3 bg-purple-50 rounded-lg">
-              <span className="block text-xl font-bold text-purple-700">{results.referringDomains}</span>
+              <span className="block text-xl font-bold text-purple-700">{results.referringDomains ?? 0}</span>
               <span className="text-xs text-gray-500 font-medium">Referring Domains</span>
             </div>
           </div>
@@ -89,27 +102,34 @@ export default function BacklinkChecker() {
                 </tr>
               </thead>
               <tbody>
-                {results.links.map((link, idx) => (
-                  <tr key={idx} className="hover:bg-gray-50 text-gray-600">
-                    <td className="p-2 border-b max-w-xs truncate">
-                    <a 
-                      href={link.source} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="text-blue-600 hover:text-blue-800 underline inline-block w-full cursor-pointer"
-                    >
-                      {link.source}
-                    </a>
-                  </td>
-
-                    <td className="p-2 border-b text-center italic">"{link.anchor}"</td>
-                    <td className="p-2 border-b text-center">
-                      <span className={`px-2 py-0.5 rounded text-xs font-semibold ${link.isNoFollow ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
-                        {link.isNoFollow ? 'NoFollow' : 'DoFollow'}
-                      </span>
+                {results.links && results.links.length > 0 ? (
+                  results.links.map((link, idx) => (
+                    <tr key={idx} className="hover:bg-gray-50 text-gray-600">
+                      <td className="p-2 border-b max-w-xs truncate">
+                        <a 
+                          href={link.source} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-blue-600 hover:text-blue-800 underline inline-block w-full cursor-pointer"
+                        >
+                          {link.source}
+                        </a>
+                      </td>
+                      <td className="p-2 border-b text-center italic">"{link.anchor || 'No Anchor'}"</td>
+                      <td className="p-2 border-b text-center">
+                        <span className={`px-2 py-0.5 rounded text-xs font-semibold ${link.isNoFollow ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
+                          {link.isNoFollow ? 'NoFollow' : 'DoFollow'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={3} className="p-4 text-center text-gray-400">
+                      No referring links found for this domain.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
