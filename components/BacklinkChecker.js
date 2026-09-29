@@ -91,9 +91,17 @@ export default function BacklinkChecker() {
               <tbody>
                 {results.links.map((link, idx) => (
                   <tr key={idx} className="hover:bg-gray-50 text-gray-600">
-                    <td className="p-2 border-b max-w-xs truncate text-blue-600 underline">
-                      <a href={link.source} target="_blank" rel="noopener noreferrer">{link.source}</a>
-                    </td>
+                    <td className="p-2 border-b max-w-xs truncate">
+                    <a 
+                      href={link.source} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-blue-600 hover:text-blue-800 underline inline-block w-full cursor-pointer"
+                    >
+                      {link.source}
+                    </a>
+                  </td>
+
                     <td className="p-2 border-b text-center italic">"{link.anchor}"</td>
                     <td className="p-2 border-b text-center">
                       <span className={`px-2 py-0.5 rounded text-xs font-semibold ${link.isNoFollow ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
