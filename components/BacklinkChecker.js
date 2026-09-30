@@ -46,8 +46,10 @@ export default function BacklinkChecker() {
   return (
     <div className="max-w-3xl mx-auto my-12 p-6 bg-white rounded-xl shadow-md border border-gray-100">
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">🚀 Free Backlink Seeker & Checker</h2>
-        <p className="text-gray-600 text-sm">Analyze any domain or URL to discover incoming backlink connections instantly.</p>
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">Free Outbound Link Checker</h2>
+        <p className="text-gray-600 text-sm">
+          Enter any page URL to see every external site it links to, with anchor text and follow status.
+        </p>
       </div>
 
       <form onSubmit={handleCheck} className="flex flex-col sm:flex-row gap-3 mb-6">
@@ -64,39 +66,35 @@ export default function BacklinkChecker() {
           disabled={loading}
           className="bg-blue-600 text-white font-medium px-6 py-3 rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400"
         >
-          {loading ? 'Analyzing...' : 'Find Backlinks'}
+          {loading ? 'Analyzing...' : 'Check Links'}
         </button>
       </form>
 
       {error && (
         <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm mb-6 border border-red-200">
-          ⚠️ {error}
+          {error}
         </div>
       )}
 
       {results && (
         <div className="border-t border-gray-200 pt-6">
-          <div className="grid grid-cols-3 gap-4 text-center mb-6">
+          <div className="grid grid-cols-2 gap-4 text-center mb-6">
             <div className="p-3 bg-blue-50 rounded-lg">
               <span className="block text-xl font-bold text-blue-700">{results.totalBacklinks ?? 0}</span>
-              <span className="text-xs text-gray-500 font-medium">Total Backlinks</span>
-            </div>
-            <div className="p-3 bg-green-50 rounded-lg">
-              <span className="block text-xl font-bold text-green-700">{results.domainAuthority ?? 'N/A'}</span>
-              <span className="text-xs text-gray-500 font-medium">Domain Authority</span>
+              <span className="text-xs text-gray-500 font-medium">External Links Found</span>
             </div>
             <div className="p-3 bg-purple-50 rounded-lg">
               <span className="block text-xl font-bold text-purple-700">{results.referringDomains ?? 0}</span>
-              <span className="text-xs text-gray-500 font-medium">Referring Domains</span>
+              <span className="text-xs text-gray-500 font-medium">Unique Domains</span>
             </div>
           </div>
 
-          <h3 className="font-semibold text-gray-700 mb-3 text-sm">Top Referring Sources:</h3>
+          <h3 className="font-semibold text-gray-700 mb-3 text-sm">Links found on this page:</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-sm">
               <thead>
                 <tr className="bg-gray-50 text-gray-500">
-                  <th className="p-2 border-b">Source Page URL</th>
+                  <th className="p-2 border-b">Linked URL</th>
                   <th className="p-2 border-b text-center">Anchor Text</th>
                   <th className="p-2 border-b text-center">Type</th>
                 </tr>
@@ -106,10 +104,10 @@ export default function BacklinkChecker() {
                   results.links.map((link, idx) => (
                     <tr key={idx} className="hover:bg-gray-50 text-gray-600">
                       <td className="p-2 border-b max-w-xs truncate">
-                        <a 
-                          href={link.source} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
+                        <a
+                          href={link.source}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="text-blue-600 hover:text-blue-800 underline inline-block w-full cursor-pointer"
                         >
                           {link.source}
@@ -126,7 +124,7 @@ export default function BacklinkChecker() {
                 ) : (
                   <tr>
                     <td colSpan={3} className="p-4 text-center text-gray-400">
-                      No referring links found for this domain.
+                      No external links found on this page.
                     </td>
                   </tr>
                 )}
