@@ -72,6 +72,14 @@ export default function Nav() {
           </Link>
         </nav>
         <div className="flex items-center gap-4">
+          {!isDashboard && (
+            <Link
+              href="/tools/backlink-opportunity-finder"
+              className="hidden sm:inline-block text-xs font-bold text-black bg-green-500 hover:bg-green-400 px-3 py-2 rounded-md"
+            >
+              Free Tool
+            </Link>
+          )}
           {!isDashboard && isLoggedIn === true && (
             <>
               <button
