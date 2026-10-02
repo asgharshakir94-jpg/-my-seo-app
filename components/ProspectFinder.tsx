@@ -100,9 +100,7 @@ export default function ProspectFinder() {
           className="rounded-lg border border-line bg-surface p-3 text-ink"
         >
           <option value="US">United States</option>
-          <option value="CA">Canada</option>
-          <option value="UK">United Kingdom</option>
-        </select>
+          </select>
         <button
           type="submit"
           disabled={loading}

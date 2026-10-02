@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 // Set to true once you have filled in verified_at for the sites you trust.
-const REQUIRE_VERIFIED = false;
+const REQUIRE_VERIFIED = true;
 
 const HOME_TRADE_WORDS = [
   'plumb', 'roof', 'hvac', 'solar', 'electric', 'carpent', 'landscap',
@@ -35,6 +35,7 @@ export async function POST(request) {
       .select('domain, site_name, type, authority_score', { count: 'exact' })
       .eq('country', country)
       .in('niche', niches)
+      .eq('is_free', true)
       .order('authority_score', { ascending: false, nullsFirst: false })
       .limit(3);
 

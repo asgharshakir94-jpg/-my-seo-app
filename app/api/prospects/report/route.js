@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 // Keep this the same as in the search route.
-const REQUIRE_VERIFIED = false;
+const REQUIRE_VERIFIED = true;
 
 const COUNTRIES = ['US', 'CA', 'UK'];
 const HOME_TRADE_WORDS = [
@@ -119,6 +119,7 @@ export async function POST(request) {
       .select('domain, site_name, type, authority_score, submit_url, contact_url')
       .eq('country', country)
       .in('niche', niches)
+      .eq('is_free', true)
       .order('authority_score', { ascending: false, nullsFirst: false })
       .limit(100);
     if (REQUIRE_VERIFIED) query = query.not('verified_at', 'is', null);
