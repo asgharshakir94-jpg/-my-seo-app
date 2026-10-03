@@ -58,7 +58,7 @@ async function buildPdf({ niche, country, rows }) {
   rows.forEach((r, i) => {
     const name = r.site_name || r.domain;
     const url = r.submit_url || r.contact_url || `https://${r.domain}`;
-    const score = r.authority_score != null ? `${Number(r.authority_score).toFixed(1)}/10` : 'n/a';
+    const score = r.authority_score != null ? `${Number(r.authority_score).toFixed(1)}/10` : 'not yet rated';
     line(`${i + 1}. ${name} (${r.domain})`, { size: 12, f: bold, gap: 3 });
     line(`Type: ${TYPE_LABELS[r.type] || r.type}   |   Authority score: ${score}`, { size: 10, gap: 3 });
     line(`Where to submit: ${url}`, { size: 10, color: rgb(0.1, 0.25, 0.6), gap: 12 });
