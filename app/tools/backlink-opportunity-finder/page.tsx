@@ -5,6 +5,13 @@ export const metadata: Metadata = {
   title: 'Free Backlink Opportunity Finder | RankinSEO',
   description:
     'Find directories and sites where your trade business can get listed or earn a link. Free, no sign-up to search.',
+  openGraph: {
+    title: 'Free Backlink Opportunity Finder | RankinSEO',
+    description:
+      'Find directories and sites where your trade business can get listed. Get the list as a free PDF.',
+    url: '/tools/backlink-opportunity-finder/',
+    type: 'website',
+  },
 };
 
 export default function BacklinkOpportunityFinderPage() {

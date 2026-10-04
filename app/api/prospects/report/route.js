@@ -111,7 +111,19 @@ export async function POST(request) {
       return NextResponse.json({ message: 'You have reached the daily limit. Please try again tomorrow.' }, { status: 429 });
     }
 
-    const isHomeTrade = HOME_TRADE_WORDS.some((w) => niche.includes(w));
+        // Daily cap, to stay under the email provider's free daily limit.
+        const { count: sentToday } = await supabase
+        .from('prospect_leads')
+        .select('id', { count: 'exact', head: true })
+        .gte('created_at', since);
+      if ((sentToday ?? 0) >= 80) {
+        return NextResponse.json(
+          { message: "We've reached today's limit of free reports. Please try again tomorrow." },
+          { status: 429 }
+        );
+      }
+  
+      const isHomeTrade = HOME_TRADE_WORDS.some((w) => niche.includes(w));
     const niches = isHomeTrade ? ['home services', 'general'] : ['general'];
 
     let query = supabase
