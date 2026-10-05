@@ -124,7 +124,12 @@ export async function POST(request) {
       }
   
       const isHomeTrade = HOME_TRADE_WORDS.some((w) => niche.includes(w));
-    const niches = isHomeTrade ? ['home services', 'general'] : ['general'];
+      const words = niche.split(/[^a-z]+/).filter(Boolean);
+      const hasWord = (list) => list.some((w) => words.includes(w));
+      const niches = ['general', niche];
+      if (isHomeTrade) niches.push('home services');
+      if (hasWord(['saas', 'software', 'startup', 'tech', 'app', 'apps', 'ai'])) niches.push('software');
+      if (hasWord(['agency', 'marketing', 'seo', 'advertising', 'design'])) niches.push('marketing agency');
 
     let query = supabase
       .from('link_prospects')
