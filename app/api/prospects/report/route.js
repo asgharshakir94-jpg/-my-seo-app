@@ -5,6 +5,9 @@ import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 // Keep this the same as in the search route.
 const REQUIRE_VERIFIED = true;
 
+// Where replies and opt-out requests go.
+const REPLY_TO = process.env.FINDER_REPLY_TO || 'hello@rankinseo.xyz';
+
 const COUNTRIES = ['US', 'CA', 'UK'];
 const HOME_TRADE_WORDS = [
   'plumb', 'roof', 'hvac', 'solar', 'electric', 'carpent', 'landscap',
@@ -20,6 +23,14 @@ const TYPE_LABELS = {
 
 // pdf-lib's standard fonts only handle basic characters, so strip the rest.
 const ascii = (s) => String(s ?? '').replace(/[^\x20-\x7E]/g, '').trim();
+
+// Escape text before putting it inside the HTML email.
+const esc = (s) =>
+  String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 
 async function buildPdf({ niche, country, rows }) {
   const pdf = await PDFDocument.create();
@@ -111,25 +122,25 @@ export async function POST(request) {
       return NextResponse.json({ message: 'You have reached the daily limit. Please try again tomorrow.' }, { status: 429 });
     }
 
-        // Daily cap, to stay under the email provider's free daily limit.
-        const { count: sentToday } = await supabase
-        .from('prospect_leads')
-        .select('id', { count: 'exact', head: true })
-        .gte('created_at', since);
-      if ((sentToday ?? 0) >= 80) {
-        return NextResponse.json(
-          { message: "We've reached today's limit of free reports. Please try again tomorrow." },
-          { status: 429 }
-        );
-      }
-  
-      const isHomeTrade = HOME_TRADE_WORDS.some((w) => niche.includes(w));
-      const words = niche.split(/[^a-z]+/).filter(Boolean);
-      const hasWord = (list) => list.some((w) => words.includes(w));
-      const niches = ['general', niche];
-      if (isHomeTrade) niches.push('home services');
-      if (hasWord(['saas', 'software', 'startup', 'tech', 'app', 'apps', 'ai'])) niches.push('software');
-      if (hasWord(['agency', 'marketing', 'seo', 'advertising', 'design'])) niches.push('marketing agency');
+    // Daily cap, to stay under the email provider's free daily limit.
+    const { count: sentToday } = await supabase
+      .from('prospect_leads')
+      .select('id', { count: 'exact', head: true })
+      .gte('created_at', since);
+    if ((sentToday ?? 0) >= 80) {
+      return NextResponse.json(
+        { message: "We've reached today's limit of free reports. Please try again tomorrow." },
+        { status: 429 }
+      );
+    }
+
+    const isHomeTrade = HOME_TRADE_WORDS.some((w) => niche.includes(w));
+    const words = niche.split(/[^a-z]+/).filter(Boolean);
+    const hasWord = (list) => list.some((w) => words.includes(w));
+    const niches = ['general', niche];
+    if (isHomeTrade) niches.push('home services');
+    if (hasWord(['saas', 'software', 'startup', 'tech', 'app', 'apps', 'ai'])) niches.push('software');
+    if (hasWord(['agency', 'marketing', 'seo', 'advertising', 'design'])) niches.push('marketing agency');
 
     let query = supabase
       .from('link_prospects')
@@ -163,6 +174,32 @@ export async function POST(request) {
 
     const pdfBytes = await buildPdf({ niche: ascii(niche), country, rows });
 
+    const greetName = businessName ? ' ' + ascii(businessName) : '';
+    const postal = process.env.FINDER_POSTAL_ADDRESS
+      ? ascii(process.env.FINDER_POSTAL_ADDRESS)
+      : '';
+
+    const html =
+      `<p>Hi${esc(greetName)},</p>` +
+      `<p>Your list of ${rows.length} backlink opportunities for "${esc(ascii(niche))}" is attached as a PDF.</p>` +
+      `<p>Check each site's requirements and pricing before you submit. No placement is guaranteed.</p>` +
+      `<p>- RankinSEO<br/>https://rankinseo.xyz</p>` +
+      `<hr style="border:none;border-top:1px solid #ddd;margin:24px 0 12px"/>` +
+      `<p style="font-size:12px;color:#666;line-height:1.5">` +
+      `You are receiving this one-time email because you requested this report at rankinseo.xyz. ` +
+      `To opt out of any future emails or have your address removed, reply to this message with "unsubscribe" and we will do it.` +
+      (postal ? `<br/>${esc(postal)}` : '') +
+      `</p>`;
+
+    const text =
+      `Hi${greetName},\n\n` +
+      `Your list of ${rows.length} backlink opportunities for "${ascii(niche)}" is attached as a PDF.\n\n` +
+      `Check each site's requirements and pricing before you submit. No placement is guaranteed.\n\n` +
+      `- RankinSEO\nhttps://rankinseo.xyz\n\n` +
+      `--\nYou are receiving this one-time email because you requested this report at rankinseo.xyz. ` +
+      `To opt out of any future emails or have your address removed, reply to this message with "unsubscribe" and we will do it.` +
+      (postal ? `\n${postal}` : '');
+
     const emailRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -172,12 +209,13 @@ export async function POST(request) {
       body: JSON.stringify({
         from: process.env.FINDER_FROM_EMAIL,
         to: [email],
+        reply_to: REPLY_TO,
         subject: `Your backlink opportunities list (${rows.length} sites)`,
-        html:
-          `<p>Hi${businessName ? ' ' + ascii(businessName) : ''},</p>` +
-          `<p>Your list of ${rows.length} backlink opportunities for "${ascii(niche)}" is attached as a PDF.</p>` +
-          `<p>Check each site's requirements and pricing before you submit. No placement is guaranteed.</p>` +
-          `<p>- RankinSEO<br/>https://rankinseo.xyz</p>`,
+        html,
+        text,
+        headers: {
+          'List-Unsubscribe': `<mailto:${REPLY_TO}?subject=unsubscribe>`,
+        },
         attachments: [
           {
             filename: 'backlink-opportunities.pdf',
