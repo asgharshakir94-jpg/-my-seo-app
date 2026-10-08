@@ -5,32 +5,26 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const base = 'https://rankinseo.xyz';
+  const page = (
+    path: string,
+    changeFrequency: 'daily' | 'weekly' | 'monthly',
+    priority: number
+  ): MetadataRoute.Sitemap[number] => ({
+    url: `${base}${path}`,
+    lastModified: new Date(),
+    changeFrequency,
+    priority,
+  });
+
   const staticRoutes: MetadataRoute.Sitemap = [
-    {
-      url: 'https://rankinseo.xyz',
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 1,
-    },
-    {
-      url: 'https://rankinseo.xyz',
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: 'https://rankinseo.xyz',
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: 'https://rankinseo.xyz',
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.7,
-    },
-  ];
+    { url: base, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },
+    page('/tools/keyword-finder/', 'monthly', 0.8),
+    page('/tools/backlink-opportunity-finder/', 'monthly', 0.8),
+    page('/audit/', 'monthly', 0.7),
+    page('/blog/', 'daily', 0.7),
+    page('/contact/', 'monthly', 0.5),
+  ]; 
 
   let blogRoutes: MetadataRoute.Sitemap = [];
 
