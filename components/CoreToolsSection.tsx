@@ -32,11 +32,18 @@ const tools = [
     href: "/audit",
   },
   {
+    title: "Free Keyword Finder",
+    desc: "Get real Google keyword ideas and customer questions for your trade. Free, no sign-up.",
+    href: "/tools/keyword-finder",
+  },
+  {
     title: "Free Backlink Seeker",
     desc: "Crawl and analyze any domain to instantly discover active backlink connection metadata.",
     href: "/tools/backlink-seeker",
   },
 ];
+
+const NEW_TOOLS = ["Free Backlink Seeker", "Free Keyword Finder"];
 
 export function CoreToolsSection() {
   return (
@@ -61,7 +68,7 @@ export function CoreToolsSection() {
             className="block bg-white rounded-2xl p-6 border border-line hover:border-accent transition-colors shadow-sm hover:shadow-md"
           >
             <h3 className="font-semibold text-ink flex items-center gap-2">
-              {tool.title} {tool.title === "Free Backlink Seeker" && <span className="text-xs bg-green-100 text-green-800 font-bold px-2 py-0.5 rounded-full">New</span>}
+              {tool.title} {NEW_TOOLS.includes(tool.title) && <span className="text-xs bg-green-100 text-green-800 font-bold px-2 py-0.5 rounded-full">New</span>}
             </h3>
             <p className="mt-2 text-sm text-ink/70">{tool.desc}</p>
           </Link>
