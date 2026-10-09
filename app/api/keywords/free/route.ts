@@ -31,10 +31,27 @@ const CITIES = [
   'portland','las vegas','memphis','louisville','baltimore','milwaukee','albuquerque','tucson','fresno',
   'sacramento','atlanta','miami','orlando','tampa','birmingham','hoover','bessemer','toronto','vancouver',
   'calgary','london','manchester','sydney','melbourne',
+  'frisco','tyler','boise','matthews','palm bay','plano','irving','garland','mckinney','arlington','lubbock',
+  'laredo','corpus christi','honolulu','anchorage','omaha','tulsa','wichita','raleigh','durham','greensboro',
+  'richmond','norfolk','virginia beach','pittsburgh','cincinnati','cleveland','kansas city','st louis',
+  'minneapolis','new orleans','oklahoma city','salt lake city','oakland','long beach','bakersfield','riverside',
+  'anaheim','santa ana','stockton','henderson','reno','spokane','tacoma','mesa','scottsdale','chandler',
+  'gilbert','tempe','glendale','aurora','colorado springs','fort lauderdale','hialeah','st petersburg',
+  'clearwater','lakeland','naples','sarasota','savannah','augusta','charleston','knoxville','chattanooga',
+  'lexington','buffalo','rochester','albany','syracuse','newark','jersey city','hartford','providence',
+  'ottawa','edmonton','montreal','winnipeg','mississauga','brampton','leeds','glasgow','liverpool','bristol',
+  'brisbane','perth','adelaide','canberra',
+];
+// Two-letter state codes that are not also common words (so "me", "in", "or",
+// "hi", "ok", "la" are NOT included and "near me" is never treated as a place).
+const STATE_CODES = [
+  'tx','ca','fl','ny','nj','nc','sc','va','wa','ga','il','mi','mn','tn','az','nv','nm','ut','ks','ky','ia',
+  'nd','sd','wv','wi','wy','mt','nh','vt','ri','ct','md','ak',
 ];
 const PLACE_RE = new RegExp(`\\b(${[...STATES, ...CITIES].join('|')})\\b`, 'i');
+const CODE_RE = new RegExp(`\\b(${STATE_CODES.join('|')})\\b`, 'i');
 const hasPlace = (text: string) =>
-  PLACE_RE.test(text) || /,\s*[a-z]{2}\b/i.test(text) || /\b\d{5}\b/.test(text);
+  PLACE_RE.test(text) || CODE_RE.test(text) || /,\s*[a-z]{2}\b/i.test(text) || /\b\d{5}\b/.test(text);
 
 // Keep related searches and questions only if they still contain every main
 // word of the visitor's search. This drops other companies' names and
