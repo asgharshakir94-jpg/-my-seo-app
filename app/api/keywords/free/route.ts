@@ -53,6 +53,12 @@ const CODE_RE = new RegExp(`\\b(${STATE_CODES.join('|')})\\b`, 'i');
 const hasPlace = (text: string) =>
   PLACE_RE.test(text) || CODE_RE.test(text) || /,\s*[a-z]{2}\b/i.test(text) || /\b\d{5}\b/.test(text);
 
+// Job-seeker, student and definition searches are not what a trades business
+// wants to write pages about, so hide them unless the visitor searched for one.
+const NOISE_RE =
+  /\b(jobs?|careers?|salary|salaries|schools?|courses?|training|certifications?|certificates?|degrees?|apprenticeships?|resumes?|hiring|meaning|definition|define|pronunciation|medical|engineering|wikipedia|acronym)\b/i;
+const hasNoise = (text: string) => NOISE_RE.test(text);
+
 // Keep related searches and questions only if they still contain every main
 // word of the visitor's search. This drops other companies' names and
 // off-topic results.
@@ -115,14 +121,15 @@ export async function POST(req: Request) {
     }
     const supabase = createClient(url, serviceKey, { auth: { persistSession: false } });
 
-    // If the visitor typed a place themselves, keep place-specific ideas.
+    // If the visitor typed a place or a job/school word themselves, keep those ideas.
     const keepPlaces = hasPlace(keyword);
+    const keepNoise = hasNoise(keyword);
     const stems = seedStems(keyword);
-    const placeOk = (x: string) => keepPlaces || !hasPlace(x);
+    const ok = (x: string) => (keepPlaces || !hasPlace(x)) && (keepNoise || !hasNoise(x));
     const clean = (r: Results): Results => ({
-      suggestions: r.suggestions.filter(placeOk),
-      related: r.related.filter((x) => placeOk(x) && onTopic(x, stems)),
-      questions: r.questions.filter((x) => placeOk(x) && onTopic(x, stems, false)),
+      suggestions: r.suggestions.filter(ok),
+      related: r.related.filter((x) => ok(x) && onTopic(x, stems)),
+      questions: r.questions.filter((x) => ok(x) && onTopic(x, stems, false)),
     });
 
     // Per-visitor limit (IP is hashed, never stored raw).
