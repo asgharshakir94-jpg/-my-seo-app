@@ -24,16 +24,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     page('/audit/', 'monthly', 0.7),
     page('/blog/', 'daily', 0.7),
     page('/contact/', 'monthly', 0.5),
-  ]; 
+  ];
 
   let blogRoutes: MetadataRoute.Sitemap = [];
 
   try {
-    const supabaseUrl = "https://vquzrlcnlvxgskxvtphf.supabase.co";
-    // 🌟 Place your actual long anon string key inside these double quotes:
-    const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxdXpybGNubHZ4Z3NreHZ0cGhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNTgyMTIsImV4cCI6MjA5ODYzNDIxMn0.1H_UB7tS4tJDU9WciPfnM33MlHZeV3r3doXx4qcS4a0";
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-    // Simplified connection layout - no double checks to cause underlines
     if (supabaseUrl && supabaseAnonKey) {
       const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -44,15 +42,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
       if (!error && articles) {
         blogRoutes = articles.map((article: any) => ({
-          url: `https://rankinseo.xyz/${article.slug}`, 
+          url: `${base}/${article.slug}`,
           lastModified: new Date(article.created_at || new Date()),
           changeFrequency: 'monthly',
           priority: 0.6,
         }));
+      } else if (error) {
+        console.error('Sitemap query error:', error.message);
       }
+    } else {
+      console.error('Sitemap: missing Supabase env vars');
     }
   } catch (error) {
-    console.error("Sitemap system exception error:", error);
+    console.error('Sitemap system exception error:', error);
   }
 
   return [...staticRoutes, ...blogRoutes];
