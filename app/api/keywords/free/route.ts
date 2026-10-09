@@ -56,7 +56,7 @@ const hasPlace = (text: string) =>
 // Job-seeker, student and definition searches are not what a trades business
 // wants to write pages about, so hide them unless the visitor searched for one.
 const NOISE_RE =
-  /\b(jobs?|careers?|salary|salaries|schools?|courses?|training|certifications?|certificates?|degrees?|apprenticeships?|resumes?|hiring|meaning|definition|define|pronunciation|medical|engineering|wikipedia|acronym)\b/i;
+  /\b(jobs?|careers?|salary|salaries|schools?|courses?|training|certifications?|certificates?|degrees?|apprenticeships?|resumes?|hiring|meaning|definition|define|pronunciation|medical|engineering|wikipedia|acronym|stand for|stands for|per hour|an hour|a year|per year)\b/i;
 const hasNoise = (text: string) => NOISE_RE.test(text);
 
 // Keep related searches and questions only if they still contain every main
