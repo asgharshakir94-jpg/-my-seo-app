@@ -30,6 +30,9 @@ export default function Footer() {
           <Link href="/contact" className="hover:text-ink transition-colors">
             Contact
           </Link>
+          <Link href="/write-for-us" className="hover:text-ink transition-colors">
+            Write for Us
+          </Link>
         </div>
 
         {/* Social Icons */}

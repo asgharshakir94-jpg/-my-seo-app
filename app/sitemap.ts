@@ -33,6 +33,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     page('/audit/', 'monthly', 0.7),
     page('/blog/', 'daily', 0.7),
     page('/contact/', 'monthly', 0.5),
+    page('/write-for-us/', 'monthly', 0.5),
   ];
 
   let blogRoutes: MetadataRoute.Sitemap = [];
