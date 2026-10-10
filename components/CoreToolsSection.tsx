@@ -37,13 +37,18 @@ const tools = [
     href: "/tools/keyword-finder",
   },
   {
-    title: "Free Backlink Seeker",
-    desc: "Crawl and analyze any domain to instantly discover active backlink connection metadata.",
+    title: "Free Backlink Opportunity Finder",
+    desc: "Find directories, guest post sites and listings that can link to your trade business.",
+    href: "/tools/backlink-opportunity-finder",
+  },
+  {
+    title: "Free Outbound Link Checker",
+    desc: "Check which other sites a page links out to, such as social profiles and partner sites.",
     href: "/tools/backlink-seeker",
   },
 ];
 
-const NEW_TOOLS = ["Free Backlink Seeker", "Free Keyword Finder"];
+const NEW_TOOLS = ["Free Keyword Finder", "Free Backlink Opportunity Finder"];
 
 export function CoreToolsSection() {
   return (
