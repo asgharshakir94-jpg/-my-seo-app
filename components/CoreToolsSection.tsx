@@ -32,6 +32,11 @@ const tools = [
     href: "/audit",
   },
   {
+    title: "Local Business Schema Generator",
+    desc: "Generate LocalBusiness JSON-LD schema in seconds. Free, no sign-up.",
+    href: "/tools/schema-generator",
+  },
+  {
     title: "Free Keyword Finder",
     desc: "Get real Google keyword ideas and customer questions for your trade. Free, no sign-up.",
     href: "/tools/keyword-finder",
