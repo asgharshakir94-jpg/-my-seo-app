@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next';
 import { createClient } from '@supabase/supabase-js';
+import { TRADE_CALCULATORS } from '@/lib/tradeCalculators';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -17,10 +18,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority,
   });
 
+  const calculatorRoutes: MetadataRoute.Sitemap = Object.values(TRADE_CALCULATORS).map(
+    (config) => page(`/tools/${config.slug}-calculator/`, 'monthly', 0.7)
+  );
+
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: base, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },
+    page('/tools/', 'monthly', 0.8),
     page('/tools/keyword-finder/', 'monthly', 0.8),
     page('/tools/backlink-opportunity-finder/', 'monthly', 0.8),
+    page('/tools/schema-generator/', 'monthly', 0.6),
+    page('/tools/backlink-seeker/', 'monthly', 0.4),
+    ...calculatorRoutes,
     page('/audit/', 'monthly', 0.7),
     page('/blog/', 'daily', 0.7),
     page('/contact/', 'monthly', 0.5),

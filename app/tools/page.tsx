@@ -5,7 +5,7 @@ import { TRADE_CALCULATORS } from '@/lib/tradeCalculators';
 export const metadata: Metadata = {
   title: 'Free Trade Calculators & SEO Tools | RankinSEO',
   description:
-    'Free cost and profit margin calculators alongside modern marketing utilities like schema generators and backlink checkers.',
+    'Free cost and profit margin calculators for trades businesses, plus free SEO tools: keyword finder, backlink opportunity finder, schema generator and more.',
 };
 
 export default function ToolsIndexPage() {
@@ -38,19 +38,59 @@ export default function ToolsIndexPage() {
         ))}
       </div>
 
-      {/* SECTION 2: SEO & Marketing Utilities */}
+      {/* SECTION 2: SEO & Marketing Tools */}
       <div className="border-t border-line pt-12">
-        <h2 className="text-xl font-semibold text-ink mb-2">More free production tools</h2>
+        <h2 className="text-xl font-semibold text-ink mb-2">Free SEO tools for trades businesses</h2>
         <p className="text-ink/70 mb-8">
-          Explore our collection of free marketing utilities designed to streamline your development and content pipeline.
+          Find keywords customers search for, discover sites that can link to you, and get your business found on Google. Free, no sign-up.
         </p>
         
         <div className="grid gap-4 sm:grid-cols-2">
-          
-          {/* Card 1: Local Business Schema Generator */}
+
+          {/* Card 1: Free Keyword Finder */}
+          <Link
+            href="/tools/keyword-finder"
+            className="group block rounded-lg border border-line bg-surface p-5 hover:border-accent-from transition-colors flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-2xl">🔎</span>
+                <span className="text-xs font-semibold px-2 py-0.5 rounded bg-green-100 text-green-800">New</span>
+              </div>
+              <h3 className="text-lg font-medium text-ink mb-1">
+                Free Keyword Finder
+              </h3>
+              <p className="text-sm text-ink/70 mb-4 leading-relaxed">
+                Get real Google keyword ideas and the questions customers ask for your trade. Free, no sign-up.
+              </p>
+            </div>
+            <span className="text-sm font-medium text-ink/90 group-hover:underline mt-auto">Open Free Tool →</span>
+          </Link>
+
+          {/* Card 2: Free Backlink Opportunity Finder */}
+          <Link
+            href="/tools/backlink-opportunity-finder"
+            className="group block rounded-lg border border-line bg-surface p-5 hover:border-accent-from transition-colors flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-2xl">🤝</span>
+                <span className="text-xs font-semibold px-2 py-0.5 rounded bg-green-100 text-green-800">New</span>
+              </div>
+              <h3 className="text-lg font-medium text-ink mb-1">
+                Free Backlink Opportunity Finder
+              </h3>
+              <p className="text-sm text-ink/70 mb-4 leading-relaxed">
+                Find directories, guest post sites and listings that can link to your trade business.
+              </p>
+            </div>
+            <span className="text-sm font-medium text-ink/90 group-hover:underline mt-auto">Open Free Tool →</span>
+          </Link>
+
+          {/* Card 3: Local Business Schema Generator */}
           <Link
             href="/tools/schema-generator"
-            className="block rounded-lg border border-line bg-surface p-5 hover:border-accent-from transition-colors flex flex-col justify-between"
+            className="group block rounded-lg border border-line bg-surface p-5 hover:border-accent-from transition-colors flex flex-col justify-between"
           >
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -67,21 +107,20 @@ export default function ToolsIndexPage() {
             <span className="text-sm font-medium text-ink/90 group-hover:underline mt-auto">Open Free Tool →</span>
           </Link>
 
-          {/* Card 2: Free Backlink Seeker & Checker */}
+          {/* Card 4: Free Outbound Link Checker */}
           <Link
             href="/tools/backlink-seeker"
-            className="block rounded-lg border border-line bg-surface p-5 hover:border-accent-from transition-colors flex flex-col justify-between"
+            className="group block rounded-lg border border-line bg-surface p-5 hover:border-accent-from transition-colors flex flex-col justify-between"
           >
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-2xl">🚀</span>
-                <span className="text-xs font-semibold px-2 py-0.5 rounded bg-green-100 text-green-800">New</span>
+                <span className="text-2xl">🔗</span>
               </div>
               <h3 className="text-lg font-medium text-ink mb-1">
-                Free Backlink Seeker & Checker
+                Free Outbound Link Checker
               </h3>
               <p className="text-sm text-ink/70 mb-4 leading-relaxed">
-                Analyze any live domain or URL to instantly discover, crawl, and track active incoming link connections.
+                Check which other sites a page links out to, such as social profiles and partner sites.
               </p>
             </div>
             <span className="text-sm font-medium text-ink/90 group-hover:underline mt-auto">Open Free Tool →</span>
