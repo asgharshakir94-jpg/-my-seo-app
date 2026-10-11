@@ -21,16 +21,9 @@ const jsonLd = {
     "highPrice": "499",
     "offerCount": "3"
   },
-  "aggregateRating": {
-    "@type": "AggregateRating",
-    "ratingValue": "4.9",
-    "reviewCount": "18",
-    "bestRating": "5",
-    "worstRating": "1"
-  },
   "audience": {
-    "@type": "BusinessAudience",
-    "audienceType": "Residential Home Service Contractors (Roofers, HVAC, Plumbers, Solar Installers)"
+  "@type": "BusinessAudience",
+  "audienceType": "Residential Home Service Contractors (Roofers, HVAC, Plumbers, Solar Installers)"
   },
   "featureList": [
     "Autonomous Keyword Mining for Trades",
