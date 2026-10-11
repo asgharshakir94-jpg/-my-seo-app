@@ -52,7 +52,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
       if (!error && articles) {
         blogRoutes = articles.map((article: any) => ({
-          url: `${base}/${article.slug}`,
+          url: `${base}/blog/${article.slug}/`,
           lastModified: new Date(article.created_at || new Date()),
           changeFrequency: 'monthly',
           priority: 0.6,

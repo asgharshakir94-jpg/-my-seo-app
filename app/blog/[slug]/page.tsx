@@ -51,12 +51,12 @@ export async function generateMetadata({
     title,
     description,
     alternates: {
-      canonical: `${SITE}/blog/${article.slug}`,
+      canonical: `${SITE}/blog/${article.slug}/`,
     },
     openGraph: {
       title,
       description,
-      url: `${SITE}/blog/${article.slug}`,
+      url: `${SITE}/blog/${article.slug}/`,
       siteName: 'RankinSEO',
       images: [
         {
@@ -87,7 +87,7 @@ export default async function BlogArticlePage({
   if (!article) notFound()
 
   const pageTitle = article.title || extractTitle(article.content, article.keyword)
-  const articleUrl = `${SITE}/blog/${article.slug}`
+  const articleUrl = `${SITE}/blog/${article.slug}/`
 
   const jsonLd = {
     '@context': 'https://schema.org',
