@@ -7,7 +7,7 @@ const supabase = createClient(
 );
 
 // Where the new-submission alert is sent. Change if your inbox differs.
-const ALERT_TO = "hello@rankinseo.xyz";
+const ALERT_TO = "asgharshakir94@gmail.com";
 
 const clean = (value: unknown, max: number) =>
   typeof value === "string" ? value.trim().slice(0, max) : "";
