@@ -47,6 +47,29 @@ function buildSeoTitle(keyword: string): string {
 function buildMetaDescription(keyword: string): string {
   return `${keyword.trim()} — practical, actionable guidance to help you get results. Learn what works and how to get started today.`.slice(0, 155);
 }
+function descriptionFromArticle(html: string, fallback: string): string {
+  const text = html
+    .replace(/<h[12][^>]*>[\s\S]*?<\/h[12]>/i, '')
+    .replace(/<figure[\s\S]*?<\/figure>/gi, '')
+    .replace(/<img[^>]*>/gi, '')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/^#+\s*/gm, '')
+    .replace(/Photo by .{1,80}? on Unsplash\.?/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (text.length < 60) return fallback;
+  const sentences = text.match(/[^.!?]+[.!?]+/g) || [];
+  let out = '';
+  for (const s of sentences) {
+    const next = (out + ' ' + s.trim()).trim();
+    if (next.length > 155) break;
+    out = next;
+  }
+  if (out.length >= 60) return out;
+  return text.slice(0, 152).trim() + '...';
+}
 
 const BRIEF_SYSTEM_PROMPT = `You are an SEO research assistant. Given a target keyword (and optional city/industry context), produce a structured content brief as raw JSON only — no markdown, no backticks, no commentary.
 
@@ -213,7 +236,7 @@ ${JSON.stringify(brief, null, 2)}`
 
     const { error: saveErr } = await supabaseAdmin
       .from('campaigns')
-      .update({ content: finalArticle, status: 'pending_review' })
+      .update({ content: finalArticle, meta_description: descriptionFromArticle(finalArticle, metaDescription), status: 'pending_review' })
       .eq('id', campaignRow.id);
 
     if (saveErr) {
