@@ -1,35 +1,40 @@
 import Link from 'next/link'
-import { createClient } from '@supabase/supabase-js' 
+import { createClient } from '@supabase/supabase-js'
 import BackToTop from '@/components/backToTop';
 
 export const dynamic = 'force-dynamic'
-export const revalidate = 0 
+export const revalidate = 0
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || ''
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || ''
 
 function extractTitle(content: string | null, keyword: string): string {
     if (content) {
-        const match = content.match(/<(h)[^>]*>(.*?)<\/\h>/);
-        if (match && match[0]) {
-            const heading = match[0].replace(/<[^>]*>/g, "").trim();
-            if (/^\d+[\.\-\)]\s/.test(heading)) {
-                return heading;
-            }
-            if (heading) return heading; 
+        const match = content.match(/<h[12][^>]*>(.*?)<\/h[12]>/i);
+        if (match) {
+            const heading = match[1].replace(/<[^>]+>/g, '').trim();
+            if (heading) return heading;
         }
     }
     return keyword.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
-function stripFirstHeading(content: string | null) {
+function excerpt(content: string | null, metaDescription: string | null, length = 160) {
+    if (metaDescription && metaDescription.trim()) {
+        const meta = metaDescription.replace(/\s+/g, ' ').trim();
+        return meta.length > length ? meta.slice(0, length).trim() + '...' : meta;
+    }
     if (!content) return '';
-    return content.replace(/<(h)[^>]*>.*?<\/\h>/, '');
-}
-
-function excerpt(content: string | null, length = 160) {
-    const stripped = stripFirstHeading(content);
-    const text = stripped.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+    const text = content
+        .replace(/<h[12][^>]*>[\s\S]*?<\/h[12]>/i, '')
+        .replace(/<img[^>]*>/gi, '')
+        .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+        .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/^#+\s*/gm, '')
+        .replace(/\s+/g, ' ')
+        .replace(/Photo by .{1,80}? on Unsplash\.?/gi, '')
+        .trim();
     return text.length > length ? text.slice(0, length).trim() + '...' : text;
 }
 
@@ -48,10 +53,10 @@ export default async function BlogIndexPage() {
 
     const { data: articles, error } = await supabase
         .from('campaigns')
-        .select('id, slug, keyword, content, created_at')
+        .select('id, slug, keyword, title, content, meta_description, created_at')
         .order('created_at', { ascending: false });
 
-    // 🌟 Modified: Prints the exact database error message onto the viewport
+    // Prints the exact database error message onto the viewport
     if (error || !articles) {
         return (
             <div className="p-8 max-w-2xl mx-auto my-12 border border-orange-200 bg-orange-50 rounded-lg text-orange-900 font-sans">
@@ -74,18 +79,18 @@ export default async function BlogIndexPage() {
 
             <ul className="space-y-4 list-none p-0">
                 {articles.map((art) => {
-                    const displayTitle = extractTitle(art.content, art.keyword || 'SEO Campaign');
-                    
+                    const displayTitle = art.title || extractTitle(art.content, art.keyword || 'SEO Campaign');
+
                     return (
                         <li key={art.id} className="border-b border-slate-100 pb-3">
-                            <Link 
+                            <Link
                                 href={`/blog/${art.slug}`}
                                 className="text-blue-600 hover:underline font-semibold text-lg block"
                             >
                                 {displayTitle}
                             </Link>
                             <p className="text-sm text-slate-500 mt-1 line-clamp-2">
-                                {excerpt(art.content)}
+                                {excerpt(art.content, art.meta_description)}
                             </p>
                         </li>
                     );
