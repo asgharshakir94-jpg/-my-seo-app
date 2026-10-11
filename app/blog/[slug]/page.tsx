@@ -6,6 +6,8 @@ import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
 import ShareButtons from '@/components/ShareButtons';
 
+const SITE = 'https://rankinseo.xyz'
+
 function extractTitle(content: string | null, keyword: string) {
   if (content) {
     const match = content.match(/<h[12][^>]*>(.*?)<\/h[12]>/i)
@@ -48,10 +50,13 @@ export async function generateMetadata({
   return {
     title,
     description,
+    alternates: {
+      canonical: `${SITE}/blog/${article.slug}`,
+    },
     openGraph: {
       title,
       description,
-      url: `https://rankinseo.xyz/blog/${article.slug}`,
+      url: `${SITE}/blog/${article.slug}`,
       siteName: 'RankinSEO',
       images: [
         {
@@ -82,28 +87,46 @@ export default async function BlogArticlePage({
   if (!article) notFound()
 
   const pageTitle = article.title || extractTitle(article.content, article.keyword)
+  const articleUrl = `${SITE}/blog/${article.slug}`
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: pageTitle.slice(0, 110),
+    ...(article.meta_description ? { description: article.meta_description } : {}),
+    image: ['https://rankinseo.xyz/og-default.jpg'],
+    datePublished: new Date(article.created_at).toISOString(),
+    mainEntityOfPage: { '@type': 'WebPage', '@id': articleUrl },
+    author: { '@type': 'Organization', name: 'RankinSEO', url: SITE },
+    publisher: { '@type': 'Organization', name: 'RankinSEO', url: SITE },
+  }
 
   return (
-    <article className="max-w-3xl mx-auto px-6 py-16">
-      <h1 className="text-3xl font-semibold tracking-tight mb-4">
-        {pageTitle}
-      </h1>
-      <p className="text-sm text-ink/50 mb-10">
-        {new Date(article.created_at).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })}
-      </p>
-      <div className="blog-content prose prose-lg max-w-none prose-headings:text-ink prose-p:text-ink/80 prose-strong:text-ink prose-a:text-ink">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
+        }}
+      />
+      <article className="max-w-3xl mx-auto px-6 py-16">
+        <h1 className="text-3xl font-semibold tracking-tight mb-4">
+          {pageTitle}
+        </h1>
+        <p className="text-sm text-ink/50 mb-10">
+          {new Date(article.created_at).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })}
+        </p>
+        <div className="blog-content prose prose-lg max-w-none prose-headings:text-ink prose-p:text-ink/80 prose-strong:text-ink prose-a:text-ink">
           <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
             {stripFirstHeading(article.content)}
           </ReactMarkdown>
         </div>
-        <ShareButtons
-          title={pageTitle}
-          url={`https://rankinseo.xyz/blog/${article.slug}`}
-        />
-    </article>
+        <ShareButtons title={pageTitle} url={articleUrl} />
+      </article>
+    </>
   )
 }
