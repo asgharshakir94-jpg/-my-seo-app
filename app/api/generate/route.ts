@@ -61,8 +61,8 @@ function descriptionFromArticle(html: string, fallback: string): string {
     .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
     .replace(/<[^>]*>/g, ' ')
     .replace(/^#+\s*/gm, '')
-    .replace(/Photo by .{1,80}? on Unsplash\.?/gi, '')
     .replace(/\s+/g, ' ')
+    .replace(/Photo by .{1,80}? on Unsplash\.?/gi, '')
     .trim();
   if (text.length < 60) return fallback;
   const sentences = text.match(/[^.!?]+[.!?]+/g) || [];
