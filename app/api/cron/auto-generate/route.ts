@@ -111,8 +111,7 @@ CRITICAL WRITING RULES:
 4. Ensure an immediate, engaging hook in the introduction followed by highly actionable, clear structural subsections.
 5. Target 900-1200 words total. Do not exceed 1400 words under any circumstances. Prioritize clarity and actionable value over exhaustive coverage — cut anything that doesn't directly help the reader.
 6. Do NOT include an <h1> tag in your output — the page title is handled separately. Start directly with your intro paragraph, then use <h2> for section headers.
-7. Always end the article with a clear call-to-action encouraging the reader to run a free SEO audit. Use this exact link and phrasing style: <p><strong>Ready to see how your site stacks up?</strong> <a href="/audit">Run a free SEO audit</a> and get a clear picture of what's holding your rankings back.</p>`;
-
+7. Do not add a call-to-action, link to an audit, or promotional paragraph at the end. End with the final section of the article.`;
 // Location-signal words used to prefer local-intent keywords, mirroring the
 // manual selection approach used when picking keywords by hand.
 const LOCAL_SIGNAL_WORDS = [
