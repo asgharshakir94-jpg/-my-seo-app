@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     }
 
     if (slug) {
-      await notifyGoogleIndexing(`https://rankinseo.xyz/blog/${slug}`);
+      await notifyGoogleIndexing(`https://rankinseo.xyz/blog/${slug}/`);
     }
 
     return new Response(JSON.stringify({ success: true }), { status: 200 });

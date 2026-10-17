@@ -233,7 +233,7 @@ async function runRiskScoringInBackground(openai: OpenAI, campaignId: number, co
 
       
         if (finalStatus === 'approved' && riskUpdateData && riskUpdateData.length > 0) {
-          await notifyGoogleIndexing(`https://rankinseo.xyz/blog/${slug}`);
+          await notifyGoogleIndexing(`https://rankinseo.xyz/blog/${slug}/`);
         }
        }  
       } catch (err) {
