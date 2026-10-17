@@ -52,6 +52,11 @@ const nextConfig: NextConfig = {
         destination: '/blog/commercial-roofing-company',
         permanent: true,
       },
+      {
+        source: '/how-to-clear-a-main-sewer-line-clog',
+        destination: '/blog/how-to-clear-a-main-sewer-line-clog',
+        statusCode: 301,
+      },
     ];
   },
 };
