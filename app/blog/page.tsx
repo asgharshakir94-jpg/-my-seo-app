@@ -1,6 +1,6 @@
-import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import BackToTop from '@/components/backToTop';
+import BlogSearchList, { type BlogListItem } from '@/components/BlogSearchList'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -54,6 +54,7 @@ export default async function BlogIndexPage() {
     const { data: articles, error } = await supabase
         .from('campaigns')
         .select('id, slug, keyword, title, content, meta_description, created_at')
+        .in('status', ['approved', 'exported'])
         .order('created_at', { ascending: false });
 
     // Prints the exact database error message onto the viewport
@@ -68,34 +69,25 @@ export default async function BlogIndexPage() {
         );
     }
 
+    const items: BlogListItem[] = articles
+        .filter((art) => art.slug)
+        .map((art) => ({
+            id: art.id,
+            slug: art.slug,
+            title: art.title || extractTitle(art.content, art.keyword || 'SEO Campaign'),
+            excerpt: excerpt(art.content, art.meta_description),
+        }))
+
     return (
         <main className="max-w-4xl mx-auto px-6 py-12 font-sans">
             <h1 className="text-3xl font-bold text-slate-900 border-b pb-4 mb-2">
                 RankinSEO Site Directory
             </h1>
             <p className="text-slate-600 mb-8">
-                Browse our complete, automated local optimization index ({articles.length} campaigns active):
+                Browse our complete, automated local optimization index ({items.length} campaigns active):
             </p>
 
-            <ul className="space-y-4 list-none p-0">
-                {articles.map((art) => {
-                    const displayTitle = art.title || extractTitle(art.content, art.keyword || 'SEO Campaign');
-
-                    return (
-                        <li key={art.id} className="border-b border-slate-100 pb-3">
-                            <Link
-                                href={`/blog/${art.slug}`}
-                                className="text-blue-600 hover:underline font-semibold text-lg block"
-                            >
-                                {displayTitle}
-                            </Link>
-                            <p className="text-sm text-slate-500 mt-1 line-clamp-2">
-                                {excerpt(art.content, art.meta_description)}
-                            </p>
-                        </li>
-                    );
-                })}
-            </ul>
+            <BlogSearchList items={items} />
 
             <BackToTop />
         </main>
