@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 import ReactMarkdown from 'react-markdown'
@@ -8,12 +9,31 @@ import ShareButtons from '@/components/ShareButtons';
 
 const SITE = 'https://rankinseo.xyz'
 
+const STOP_WORDS = new Set([
+  'what', 'is', 'are', 'the', 'for', 'and', 'how', 'to', 'of', 'in', 'a', 'an',
+  'your', 'you', 'vs', 'my', 'do', 'does', 'with', 'on', 'it', 'can', 'best',
+])
+
+function keywordWords(keyword: string): string[] {
+  return keyword
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((w) => w.length > 2 && !STOP_WORDS.has(w))
+}
+
+function toTitle(keyword: string) {
+  return keyword
+    .split(' ')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ')
+}
+
 function extractTitle(content: string | null, keyword: string) {
   if (content) {
     const match = content.match(/<h[12][^>]*>(.*?)<\/h[12]>/i)
     if (match) return match[1].replace(/<[^>]+>/g, '').trim()
   }
-  return keyword.split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+  return toTitle(keyword)
 }
 
 function stripFirstHeading(content: string | null) {
@@ -31,6 +51,38 @@ async function getArticle(slug: string) {
     .single()
 
   return data
+}
+
+type RelatedRow = {
+  slug: string
+  title: string | null
+  keyword: string | null
+  created_at: string
+}
+
+async function getRelated(slug: string, keyword: string) {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('campaigns')
+    .select('slug, title, keyword, created_at')
+    .in('status', ['approved', 'exported'])
+    .neq('slug', slug)
+    .not('slug', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(200)
+
+  const rows = (data || []) as RelatedRow[]
+  if (rows.length === 0) return []
+
+  const words = keywordWords(keyword)
+  const scored = rows.map((row) => ({
+    ...row,
+    score: keywordWords(row.keyword || '').filter((w) => words.includes(w)).length,
+  }))
+
+  // Sort is stable, so equal scores stay newest-first
+  scored.sort((a, b) => b.score - a.score)
+  return scored.slice(0, 5)
 }
 
 export async function generateMetadata({
@@ -88,6 +140,7 @@ export default async function BlogArticlePage({
 
   const pageTitle = article.title || extractTitle(article.content, article.keyword)
   const articleUrl = `${SITE}/blog/${article.slug}/`
+  const related = await getRelated(article.slug, article.keyword || '')
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -126,6 +179,21 @@ export default async function BlogArticlePage({
           </ReactMarkdown>
         </div>
         <ShareButtons title={pageTitle} url={articleUrl} />
+
+        {related.length > 0 && (
+          <nav aria-label="Related articles" className="mt-12 border-t border-line pt-8">
+            <h2 className="text-xl font-semibold mb-4">Related articles</h2>
+            <ul className="space-y-2 list-none p-0">
+              {related.map((r) => (
+                <li key={r.slug}>
+                  <Link href={`/blog/${r.slug}/`} className="underline hover:no-underline">
+                    {r.title || toTitle(r.keyword || r.slug)}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
       </article>
     </>
   )
