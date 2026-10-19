@@ -13,6 +13,11 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: '/blog/local-seo-for-plumbers',
+        destination: '/blog/local-seo-for-plumbers-the-2026-blueprint-to-dominate-google-maps/',
+        permanent: true,
+      },
+      {
         source: '/tools/roof-inspection-calculator',
         destination: '/tools/roofing-calculator',
         permanent: true,
