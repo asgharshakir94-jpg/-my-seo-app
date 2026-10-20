@@ -5,6 +5,11 @@ import { TRADE_CALCULATORS } from '@/lib/tradeCalculators';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+// Pages that stay live but should not be pushed to Google via the sitemap.
+const EXCLUDED_SLUGS = new Set<string>([
+  'best-roofing-material-for-your-climate',
+]);
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = 'https://rankinseo.xyz';
   const page = (
@@ -51,12 +56,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .not('slug', 'is', null);
 
       if (!error && articles) {
-        blogRoutes = articles.map((article: any) => ({
-          url: `${base}/blog/${article.slug}/`,
-          lastModified: new Date(article.created_at || new Date()),
-          changeFrequency: 'monthly',
-          priority: 0.6,
-        }));
+        blogRoutes = articles
+          .filter((article: any) => !EXCLUDED_SLUGS.has(article.slug))
+          .map((article: any) => ({
+            url: `${base}/blog/${article.slug}/`,
+            lastModified: new Date(article.created_at || new Date()),
+            changeFrequency: 'monthly',
+            priority: 0.6,
+          }));
       } else if (error) {
         console.error('Sitemap query error:', error.message);
       }
