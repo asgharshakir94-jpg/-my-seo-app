@@ -36,6 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     page('/tools/backlink-seeker/', 'monthly', 0.4),
     ...calculatorRoutes,
     page('/audit/', 'monthly', 0.7),
+    page('/quiz/', 'monthly', 0.8),
     page('/blog/', 'daily', 0.7),
     page('/about/', 'monthly', 0.6),
     page('/contact/', 'monthly', 0.5),
