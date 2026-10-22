@@ -63,6 +63,14 @@ export default function Nav() {
           <a href="#security" className="hover:text-ink transition-colors">Security</a>
           <a href="#faq" className="hover:text-ink transition-colors">FAQ</a>
           <Link
+            href="/about"
+            className={`transition-colors ${
+              pathname?.startsWith("/about") ? "text-accent-text font-semibold" : "hover:text-ink"
+            }`}
+          >
+            About
+          </Link>
+          <Link
             href="/contact"
             className={`transition-colors ${
               pathname?.startsWith("/contact") ? "text-accent-text font-semibold" : "hover:text-ink"
