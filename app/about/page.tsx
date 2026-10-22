@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "About RankinSEO | SEO Content for Trade Businesses",
   description:
-    "RankinSEO publishes SEO articles for roofers, HVAC, solar, plumbing and electrical businesses in the US and Canada. Meet the founder, Muhammad Asghar Shakir.",
+    "RankinSEO creates AI-powered SEO articles for roofers, HVAC, solar, plumbing and electrical businesses in the US and Canada. Meet the founder, Muhammad Asghar Shakir.",
 };
 
 export default function AboutPage() {
@@ -15,7 +15,7 @@ export default function AboutPage() {
       </h1>
       <p className="mt-4 text-lg text-gray-600">
         You run a trade business. You don&apos;t have time to learn SEO. RankinSEO
-        handles the keyword research, writing and publishing so your website
+        helps you find the keywords your customers search for and turns them into search-optimized articles, so your website
         keeps bringing in local customers.
       </p>
 
@@ -62,12 +62,12 @@ export default function AboutPage() {
             customers actually search for.
           </li>
           <li>
-            <strong>We build your content plan</strong> around your trade and
+            <strong>You choose a keyword</strong> that fits your trade and
             the areas you serve.
           </li>
           <li>
-            <strong>We write and publish articles</strong> to your website
-            every week.
+            <strong>We generate your article</strong>, written to rank, ready to publish on
+            your website.
           </li>
         </ol>
       </section>

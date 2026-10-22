@@ -63,7 +63,7 @@ export function SeoGlossarySection() {
       </p>
       <div className="space-y-4">
         {questions.map((item, i) => (
-          <div key={item.href} className="border border-line rounded-lg bg-surface">
+          <div key={`${item.href}-${i}`} className="border border-line rounded-lg bg-surface">
             <button
               onClick={() => setOpen(open === i ? null : i)}
               className="w-full flex justify-between items-center px-6 py-4 text-left"

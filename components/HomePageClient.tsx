@@ -49,13 +49,13 @@ export default function HomePageClient() {
         <div className="pt-16 pb-4 px-2">
           <div className="flex flex-col md:flex-row items-center gap-8">
             <div className="flex-1">
-              <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-ink leading-tight">
-                Publish SEO content while<br />you focus on everything else.
+            <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-ink leading-tight">
+                SEO articles for trade<br />businesses, ready to publish.
               </h1>
               <p className="mt-4 text-lg text-slate max-w-2xl">
-                RankinSEO researches keywords, drafts optimized articles, and pushes them
-                straight to your CMS — so your traffic keeps growing without you
-                touching a keyboard.
+                RankinSEO researches keywords and writes search-optimized
+                articles you can publish on your own site, so your website
+                keeps bringing in local customers.
               </p>
               <div className="mt-6 flex flex-wrap items-center gap-4">
                 <Link href="/audit">
