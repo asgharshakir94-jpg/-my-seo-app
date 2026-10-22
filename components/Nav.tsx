@@ -41,9 +41,9 @@ export default function Nav() {
           </span>
         </Link>
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium text-ink/80">
-          <a href="#features" className="hover:text-ink transition-colors">What's Inside</a>
+        <a href="/#features" className="hover:text-ink transition-colors">What's Inside</a>
 
-          <a href="#pricing" className="hover:text-ink transition-colors">Pricing</a>
+        <a href="/#pricing" className="hover:text-ink transition-colors">Pricing</a>
           <Link
             href="/blog"
             className={`transition-colors ${
@@ -60,8 +60,8 @@ export default function Nav() {
           >
             Tools
           </Link>
-          <a href="#security" className="hover:text-ink transition-colors">Security</a>
-          <a href="#faq" className="hover:text-ink transition-colors">FAQ</a>
+          <a href="/#security" className="hover:text-ink transition-colors">Security</a>
+          <a href="/#faq" className="hover:text-ink transition-colors">FAQ</a>
           <Link
             href="/about"
             className={`transition-colors ${
