@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "About RankinSEO | SEO Content for Trade Businesses",
   description:
     "RankinSEO creates AI-powered SEO articles for roofers, HVAC, solar, plumbing and electrical businesses in the US and Canada. Meet the founder, Muhammad Asghar Shakir.",
+    alternates: { canonical: "/about/" },
 };
 
 export default function AboutPage() {
