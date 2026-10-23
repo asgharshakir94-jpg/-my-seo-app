@@ -24,12 +24,11 @@ const caveat = Caveat({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://rankinseo.xyz"),
-  title: "RankinSEO - Done-For-You SEO for Roofers, HVAC, Solar & Plumbing Companies",
-  description: "Done-for-you SEO SaaS for trades businesses. We research keywords, write, and auto-publish 3-5 SEO articles a week — no dashboard, no keyboard needed.",
-  alternates: {
-    canonical: "/",
-  },
+  title: "AI SEO Articles for Roofers, HVAC & Solar | RankinSEO",
+  description:
+    "AI-written, search-optimized articles for roofing, HVAC, solar, plumbing and electrical businesses. Pick a keyword, review, publish. 14-day free trial.",
 };
+
 
 export default function RootLayout({
   children,
