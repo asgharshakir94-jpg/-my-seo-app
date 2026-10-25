@@ -15,7 +15,7 @@ const plans = [
     name: "Starter",
     description: "For small projects & creators.",
     price: "$49",
-    features: ["5 Domain Audits", "500 Keyword Tracks", "Weekly AI Content Ideas"],
+    features: ["10 SEO articles per month", "5 Domain Audits", "500 Keyword Tracks", "Weekly AI Content Ideas"],
     cta: "Start 14-day Trial",
     checkoutId: "2a0b208d-83ce-4029-b9ea-3b155ae62b83",
     href: null,
@@ -26,6 +26,7 @@ const plans = [
     description: "Best for scaling businesses.",
     price: "$129",
     features: [
+      "30 SEO articles per month",
       "25 Domain Audits",
       "2,500 Keyword Tracks",
       "Daily AI Content Ideas",

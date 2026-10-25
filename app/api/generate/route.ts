@@ -10,6 +10,7 @@ import { randomUUID } from 'crypto';
 import { computeArticleScore } from '@/lib/seoScore';
 import { matchTrade } from '@/lib/tradeCalculators';
 import { notifyGoogleIndexing } from '@/lib/googleIndexing';
+import { checkArticleAllowance } from '@/lib/planLimits';
 
 function slugify(text: string): string {
   return text
@@ -259,6 +260,23 @@ export async function POST(req: Request) {
     if (!keyword) {
       return new Response(JSON.stringify({ error: 'Keyword is required' }), { status: 400 });
     }
+
+    // Plan check: only trial/paid customers can generate, up to their monthly article limit.
+    const allowance = await checkArticleAllowance(user.id, user.email);
+    if (!allowance.allowed) {
+      logger.info({ event: 'generation_blocked', requestId, userId: user.id, reason: allowance.reason, plan: allowance.plan, used: allowance.used, limit: allowance.limit });
+      const message =
+        allowance.reason === 'limit_reached'
+          ? `You've used ${allowance.used} of ${allowance.limit} articles on your ${allowance.plan} plan this month. Upgrade your plan to write more.`
+          : allowance.reason === 'no_subscription'
+          ? 'Start your free 14-day trial to generate articles.'
+          : 'We could not check your plan right now. Please try again in a minute.';
+      return new Response(
+        JSON.stringify({ error: message, code: allowance.reason }),
+        { status: allowance.reason === 'check_failed' ? 500 : 403, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
     const slug = slugify(keyword);
     const seoTitle = buildSeoTitle(keyword);
     const metaDescription = buildMetaDescription(keyword);

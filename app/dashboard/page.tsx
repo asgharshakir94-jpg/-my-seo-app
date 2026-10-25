@@ -32,6 +32,7 @@ export default function DashboardPage() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedScore, setSelectedScore] = useState<number | null>(null);
   const [selectedBreakdown, setSelectedBreakdown] = useState<any>(null);
+  const [limitNotice, setLimitNotice] = useState<{ message: string; code: string } | null>(null);
   const [showImageModal, setShowImageModal] = useState<boolean>(false);
   const [imagePosition, setImagePosition] = useState<{ type: 'top' } | { type: 'afterHeading'; index: number }>({ type: 'top' });
   const [imageQuery, setImageQuery] = useState<string>("");
@@ -123,6 +124,7 @@ export default function DashboardPage() {
     e.preventDefault();
     if (!inputKeyword.trim()) return alert("Please enter a target keyword first!");
     setGenerating(true);
+    setLimitNotice(null);
     setSelectedHtml("");
     setSelectedStatus("");
     setSelectedId(null);
@@ -142,8 +144,21 @@ export default function DashboardPage() {
       });
 
       if (!res.ok || !res.body) {
-        alert("Pipeline failed. Ensure your OpenAI configuration keys are loaded.");
+        let message = "Something went wrong while generating your article. Please try again.";
+        let code = "";
+        try {
+          const data = await res.json();
+          if (data?.error) message = data.error;
+          code = data?.code || "";
+        } catch {
+          // response was not JSON; keep the default message
+        }
         setGenerating(false);
+        if (code === "no_subscription" || code === "limit_reached") {
+          setLimitNotice({ message, code });
+        } else {
+          alert(message);
+        }
         return;
       }
 
@@ -266,6 +281,18 @@ export default function DashboardPage() {
             </button>
           </form>
         </div>
+
+        {limitNotice && (
+          <div className="rounded-lg border border-yellow-600/40 bg-yellow-50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <p className="text-sm text-ink">{limitNotice.message}</p>
+            <Link
+              href={limitNotice.code === "no_subscription" ? "/plan" : "/#pricing"}
+              className="text-xs font-bold text-white bg-gradient-to-r from-accent-from to-accent-to rounded-md px-4 py-2 hover:opacity-90 whitespace-nowrap text-center"
+            >
+              {limitNotice.code === "no_subscription" ? "Start free trial" : "See plans"}
+            </Link>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-1 flex flex-col bg-surface border border-line rounded-lg p-4 shadow-flat h-[600px]">
