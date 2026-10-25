@@ -13,22 +13,22 @@ const FAQ_ITEMS: FAQItem[] = [
   {
     question: 'How does RankinSEO work?',
     answer:
-      'RankinSEO researches keywords for your business, writes optimized articles, and publishes them straight to your site — no manual work needed.',
+      'RankinSEO researches keywords for your business and writes search-optimized articles. You review each article and publish it on your own website.',
   },
   {
     question: 'Do I need a credit card to start?',
     answer:
-      'No. Your 14-day trial starts without any card required, so you can try it risk-free.',
+      'The Starter plan includes a 14-day free trial, and you can cancel anytime. Payment details are shown at checkout.',
   },
   {
     question: 'What platforms do you publish to?',
     answer:
-      'RankinSEO publishes natively to your site, and can also integrate with platforms like WordPress and Webflow.',
+      'You copy the finished article into your own website, such as WordPress, Wix or Squarespace, and publish it there.',
   },
   {
     question: 'Is the content actually good for SEO?',
     answer:
-      'Every article goes through a two-step process — a research brief, then a full draft — with built-in risk-scoring to flag anything that needs a human review before it goes live.',
+      'Every article starts from a keyword research brief, then a full draft, with a risk check that flags anything to review before you publish. We still recommend reading each article before it goes live.',
   },
 ];
 
@@ -73,9 +73,9 @@ export default function FloatingRobotWidget() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end gap-3">
       {isOpen && (
-        <div className="w-72 rounded-2xl border border-line bg-surface p-4 shadow-lg">
+        <div className="w-[calc(100vw-2rem)] max-w-72 rounded-2xl border border-line bg-surface p-4 shadow-lg">
           {!selectedFAQ ? (
             <>
               <p className="font-semibold text-ink mb-1">SEO Expert</p>
@@ -112,14 +112,14 @@ export default function FloatingRobotWidget() {
       <button
         ref={widgetRef}
         onClick={handleToggle}
-        className="h-36 w-36 rounded-full bg-surface border border-line shadow-lg overflow-hidden flex items-center justify-center"
+        className="h-16 w-16 sm:h-36 sm:w-36 rounded-full bg-surface border border-line shadow-lg overflow-hidden flex items-center justify-center"
         style={{
           transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
           transition: 'transform 100ms ease-out',
         }}
         aria-label="Open SEO assistant info"
       >
-        <Lottie animationData={robotAnimation} loop autoplay className="h-32 w-32" />
+        <Lottie animationData={robotAnimation} loop autoplay className="h-14 w-14 sm:h-32 sm:w-32" />
       </button>
     </div>
   );
