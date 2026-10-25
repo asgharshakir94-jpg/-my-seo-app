@@ -4,19 +4,29 @@ import { useState } from "react";
 
 const faqs = [
   {
-    question: "Can I change plans later?",
-    answer:
-      "Yes, you can upgrade or downgrade your plan at any time from your account settings. Pro-rated charges will apply immediately for upgrades.",
-  },
-  {
     question: "Is there a free trial available?",
     answer:
-      "Yes, the Starter plan includes a 14-day free trial with no credit card required to get started.",
+      "Yes. The Starter plan includes a 14-day free trial. Checkout asks for a card, and you are charged $49 a month after the 14 days unless you cancel first. You can cancel anytime. Payments are handled securely by Lemon Squeezy.",
   },
   {
-    question: "What data sources do you use?",
+    question: "Can I change plans later?",
     answer:
-      "We pull from a combination of proprietary crawlers and licensed third-party SEO data providers to keep rankings and keyword data accurate.",
+      "Yes. To upgrade or downgrade, email support@rankinseo.xyz and we will change your plan.",
+  },
+  {
+    question: "Do you publish the articles to my website?",
+    answer:
+      "No. RankinSEO writes the article and you review it, then publish it on your own website, for example on WordPress, Wix or Squarespace. You stay in control of what goes live.",
+  },
+  {
+    question: "How are the articles written?",
+    answer:
+      "You enter a keyword, and optionally a city and industry. RankinSEO uses AI language models from OpenAI to build a research brief and then write the article from it. A second AI check flags prices, statistics, dates and regulations for you to verify before publishing. Photos come from Unsplash.",
+  },
+  {
+    question: "Will the articles rank on Google?",
+    answer:
+      "We can't promise rankings, and nobody honestly can. Articles are written to follow SEO best practice, but results depend on many things, including your website's age and authority and how much competition there is for the keyword.",
   },
 ];
 

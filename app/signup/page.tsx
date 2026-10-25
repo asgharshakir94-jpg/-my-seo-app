@@ -69,7 +69,7 @@ export default function SignupPage() {
 
           <div className="bg-surface border border-line rounded-lg p-8 shadow-flat">
             <h1 className="text-xl font-bold text-ink mb-1">Create your account</h1>
-            <p className="text-sm text-slate mb-6">Start automating your SEO content.</p>
+            <p className="text-sm text-slate mb-6">Start your 14-day free trial.</p>
 
             <form onSubmit={handleSignup} className="space-y-3">
               <input

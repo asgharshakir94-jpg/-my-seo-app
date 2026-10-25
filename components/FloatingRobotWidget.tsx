@@ -18,7 +18,7 @@ const FAQ_ITEMS: FAQItem[] = [
   {
     question: 'Do I need a credit card to start?',
     answer:
-      'The Starter plan includes a 14-day free trial, and you can cancel anytime. Payment details are shown at checkout.',
+    'Yes. The Starter plan includes a 14-day free trial and checkout asks for a card. You are charged $49 a month after the 14 days unless you cancel first, and you can cancel anytime.',
   },
   {
     question: 'What platforms do you publish to?',
