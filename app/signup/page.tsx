@@ -175,24 +175,15 @@ export default function SignupPage() {
         </div>
       </div>
 
-      {/* RIGHT: Testimonial */}
-      <div className="hidden lg:flex flex-col justify-center bg-surface border-l border-line px-12 py-12">
-        <div className="max-w-md mx-auto">
-          <svg className="w-10 h-10 text-accent-from mb-6" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179z" />
-          </svg>
-
-          <p className="text-xl text-ink leading-relaxed font-medium">
-            "RankinSEO cut our content publishing time from days to hours. We went from a handful of posts a month to dozens — all ranking, all on autopilot."
-          </p>
-
-          <div className="mt-8 flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-accent-from to-accent-to" />
-            <div>
-              <p className="font-semibold text-ink">Mike Reynolds</p>
-              <p className="text-sm text-slate">Owner, Reynolds HVAC & Plumbing</p>
-            </div>
-          </div>
+      {/* RIGHT: What you get */}
+        <div className="hidden lg:flex flex-col justify-center bg-surface border-l border-line px-12 py-12">
+           <div className="max-w-md mx-auto">
+            <h2 className="text-2xl font-bold text-ink mb-4">What you get with RankinSEO</h2>
+            <ul className="space-y-3 text-ink leading-relaxed">
+            <li>✓ SEO articles written for roofing, plumbing, HVAC, electrical and solar businesses</li>
+            <li>✓ You review each article and publish it on your own website</li>
+            <li>✓ 14-day free trial on the Starter plan, cancel anytime</li>
+          </ul>
         </div>
       </div>
     </div>
