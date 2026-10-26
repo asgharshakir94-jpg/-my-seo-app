@@ -66,7 +66,7 @@ export function CoreToolsSection() {
           Our Core Features
         </h2>
         <p className="mt-4 max-w-2xl mx-auto text-lg text-ink/70">
-          Price jobs accurately, check optimization data, and find your real metrics — no sign-up required.
+         Price jobs accurately, scan your site for SEO issues, and find keyword and link ideas.
         </p>
       </div>
 

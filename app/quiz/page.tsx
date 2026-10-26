@@ -50,7 +50,7 @@ export default function QuizPage() {
             Where should we point the pipeline?
           </h1>
           <p className="text-lg text-slate max-w-md mb-8">
-            Drop in your site. We'll scan it, find the keywords worth chasing, and hand you a content plan built to rank.
+           Enter your website to see the RankinSEO plan for trade businesses. 14-day free trial, card required at checkout.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-3">

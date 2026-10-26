@@ -36,10 +36,9 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-paper text-ink flex items-center justify-center p-4">
       <div className="max-w-lg w-full bg-surface border border-line rounded-xl p-8">
-        <h1 className="text-3xl font-bold mb-2">Talk to Sales</h1>
+       <h1 className="text-3xl font-bold mb-2">Contact us</h1>
         <p className="text-ink/70 mb-8">
-          Tell us about your team and we&apos;ll get back to you within one
-          business day.
+         Tell us what you are looking for and we will reply by email. For custom or larger plans, include your trade and how many articles you need each month.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
