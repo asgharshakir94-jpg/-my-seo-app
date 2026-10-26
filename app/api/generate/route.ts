@@ -314,7 +314,7 @@ export async function POST(req: Request) {
           .from('campaigns')
           .select()
           .eq('user_id', user.id)
-          .eq('keyword', keyword)
+          .ilike('keyword', keyword)
           .single();
 
         if (fetchError || !existing) {
