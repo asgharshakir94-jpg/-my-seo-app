@@ -313,11 +313,12 @@ export async function POST(req: Request) {
         const { data: existing, error: fetchError } = await supabaseAdmin
           .from('campaigns')
           .select()
+          .eq('user_id', user.id)
           .eq('keyword', keyword)
           .single();
 
         if (fetchError || !existing) {
-          return new Response(JSON.stringify({ error: 'Keyword exists but could not be loaded' }), { status: 500 });
+          return new Response(JSON.stringify({ error: 'This keyword is already in use. Please try a slightly different keyword.' }), { status: 409 });
         }
         campaignRow = existing;
       } else {

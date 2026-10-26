@@ -3,27 +3,27 @@ import { ShieldCheck, Lock, Users, RefreshCw } from "lucide-react";
 const securityPoints = [
   {
     icon: Lock,
-    title: "Your data stays yours",
+    title: "Your account is private",
     description:
-      "Every account is protected with row-level security — your campaigns and content are never visible to other customers, ever.",
+      "Your campaigns and articles are saved under your own login, and sign-in is handled by Supabase Auth.",
   },
   {
     icon: ShieldCheck,
-    title: "Enterprise-grade infrastructure",
+    title: "Hosted on established platforms",
     description:
-      "Built on Supabase and Vercel, the same infrastructure trusted by thousands of production applications for encrypted storage and secure hosting.",
+      "RankinSEO runs on Vercel, with data stored in Supabase. Payments are handled securely by Lemon Squeezy.",
   },
   {
     icon: Users,
-    title: "You approve before it publishes",
+    title: "You stay in control",
     description:
-      "Every article goes through review before it ever reaches your website — nothing goes live without your sign-off.",
+      "You review each article and publish it yourself on your own website. Nothing is posted for you.",
   },
   {
     icon: RefreshCw,
-    title: "Always encrypted, always backed up",
+    title: "Encrypted connections",
     description:
-      "Data is encrypted in transit and at rest, with automatic backups so your content is never at risk of being lost.",
+      "Traffic to RankinSEO uses HTTPS, and Supabase encrypts stored data at rest.",
   },
 ];
 

@@ -37,8 +37,8 @@ function PlanContent() {
               RankinSEO <span className="text-sand font-medium">Project Platform</span>
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-ink">Your growth plan is ready</h1>
-          {url && <p className="text-sm text-slate mt-1">Built for {url}</p>}
+          <h1 className="text-2xl font-bold text-ink">Start with the Starter plan</h1>
+          {url && <p className="text-sm text-slate mt-1">Your website: {url}</p>}
         </div>
 
         <div className="bg-surface border border-line rounded-lg p-6 shadow-flat">
@@ -46,7 +46,7 @@ function PlanContent() {
             <h2 className="text-xl font-bold text-ink">Starter</h2>
             <span className="text-xs bg-accent-soft text-accent-text font-semibold px-2 py-1 rounded-sm">14-DAY FREE TRIAL</span>
           </div>
-          <p className="text-sm text-slate mb-4">For small projects &amp; creators.</p>
+          <p className="text-sm text-slate mb-4">For small trade businesses.</p>
           <div className="flex items-baseline gap-2 mb-6">
             <span className="text-3xl font-bold text-ink">$49</span>
             <span className="text-sm text-slate">/month</span>
@@ -59,20 +59,20 @@ function PlanContent() {
           >
             {loading ? 'Setting up...' : 'Get Started'}
           </button>
-          <p className="text-xs text-slate text-center mt-3">14-day free trial, then $49/month. Cancel anytime.</p>
+          <p className="text-xs text-slate text-center mt-3">14-day free trial, card required at checkout, then $49/month. Cancel anytime.</p>
 
           <ul className="mt-6 space-y-2 text-sm text-ink">
             <li className="flex items-center gap-2">
               <span className="h-4 w-4 rounded-full bg-accent-soft flex items-center justify-center text-[10px]">✓</span>
-              5 Domain Audits
+              10 SEO articles per month
             </li>
             <li className="flex items-center gap-2">
               <span className="h-4 w-4 rounded-full bg-accent-soft flex items-center justify-center text-[10px]">✓</span>
-              500 Keyword Tracks
+              Keyword research for your business
             </li>
             <li className="flex items-center gap-2">
               <span className="h-4 w-4 rounded-full bg-accent-soft flex items-center justify-center text-[10px]">✓</span>
-              Weekly AI Content Ideas
+              You review and publish each article on your own website
             </li>
           </ul>
 

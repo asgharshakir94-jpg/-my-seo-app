@@ -16,8 +16,8 @@ const jsonLd = {
     "@type": "AggregateOffer",
     "priceCurrency": "USD",
     "lowPrice": "49",
-    "highPrice": "499",
-    "offerCount": "3"
+    "highPrice": "129",
+    "offerCount": "2"
   },
   "audience": {
     "@type": "BusinessAudience",
@@ -25,10 +25,8 @@ const jsonLd = {
   },
   "featureList": [
     "Keyword research for trade businesses",
-    "Domain audits",
     "AI-generated, search-optimized articles",
-    "Keyword tracking"
-  ]
+   ]
 };
 
 export default function Page() {
