@@ -10,12 +10,23 @@ declare global {
   }
 }
 
-const plans = [
+type Plan = {
+  name: string;
+  description: string;
+  price: string;
+  features: string[];
+  cta: string;
+  checkoutId?: string;
+  href: string | null;
+  highlighted: boolean;
+};
+
+const plans: Plan[] = [
   {
     name: "Starter",
-    description: "For small projects & creators.",
+    description: "For small trade businesses. 14-day free trial, card required at checkout.",
     price: "$49",
-    features: ["10 SEO articles per month", "5 Domain Audits", "500 Keyword Tracks", "Weekly AI Content Ideas"],
+    features: ["10 SEO articles per month", "Keyword research for your business"],
     cta: "Start 14-day Trial",
     checkoutId: "2a0b208d-83ce-4029-b9ea-3b155ae62b83",
     href: null,
@@ -23,34 +34,13 @@ const plans = [
   },
   {
     name: "Growth",
-    description: "Best for scaling businesses.",
+    description: "For businesses that publish more often.",
     price: "$129",
-    features: [
-      "30 SEO articles per month",
-      "25 Domain Audits",
-      "2,500 Keyword Tracks",
-      "Daily AI Content Ideas",
-      "Competitor Intelligence",
-    ],
-    cta: "Upgrade to Growth",
+    features: ["30 SEO articles per month", "Keyword research for your business"],
+    cta: "Choose Growth",
     checkoutId: "4accf49a-1b3c-42df-9823-1e73672cde19",
     href: null,
     highlighted: true,
-  },
-  {
-    name: "Enterprise",
-    description: "For large-scale SEO agencies.",
-    price: "$499",
-    features: [
-      "Unlimited Audits",
-      "20,000 Keyword Tracks",
-      "White-label Reporting",
-      "Dedicated Account Manager",
-    ],
-    cta: "Contact Sales",
-    checkoutId: undefined,
-    href: "/contact",
-    highlighted: false,
   },
 ];
 
@@ -104,13 +94,10 @@ export default function PricingSection() {
         <h2 className="text-4xl md:text-5xl font-bold text-ink mb-4">
           Invest in High-Performance SEO
         </h2>
-        <p className="text-ink/70 max-w-xl mx-auto">
-          Scale your organic visibility with AI-driven insights. Choose a plan
-          tailored to your growth trajectory.
-        </p>
+        <p className="text-ink/70 max-w-xl mx-auto">Choose a plan based on how many articles you want each month.</p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
         {plans.map((plan) => (
           <div
             key={plan.name}
@@ -180,6 +167,10 @@ export default function PricingSection() {
           </div>
         ))}
       </div>
+      <p className="mt-8 text-center text-sm text-ink/70">
+        Need more than 30 articles a month?{" "}
+        <a href="/contact" className="underline">Contact us</a> about a custom plan.
+      </p>
     </section>
   );
 }
