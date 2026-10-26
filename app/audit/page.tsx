@@ -155,10 +155,10 @@ export default function AuditPage() {
 
             <div className="mt-8 bg-gradient-to-r from-accent-from to-accent-to rounded-lg p-6 text-white text-center">         
               <p className="font-medium text-lg mb-1">
-                Want us to fix these issues for you?
+              Found gaps? Start with articles that target what your customers search for.
               </p>
               <p className="text-sm text-white/80 mb-4">
-                We&apos;ll turn this audit into a content plan built for your business.
+              RankinSEO researches keywords for your business and writes search-optimized articles. You review each one and publish it on your own website.
               </p>
               
               <a href="/quiz"

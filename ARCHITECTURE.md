@@ -9,7 +9,7 @@ Last updated: October 2026.
 
 AI-powered SEO article generation and publishing platform for trades
 businesses (roofers, solar installers, plumbers, builders). Users get
-a 14-day free trial (no card required), generate SEO articles via an
+a 14-day free trial (card required at checkout), generate SEO articles via an
 AI pipeline, and publish to a native blog.
 
 ---

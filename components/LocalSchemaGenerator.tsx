@@ -401,10 +401,10 @@ export function LocalSchemaGenerator() {
       <div className="mt-8 p-6 bg-surface border border-line rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
         <div>
           <p className="font-semibold text-ink text-sm mb-0.5">
-            Want your schema automatically added to every page?
+          Need articles to go with your schema?
           </p>
           <p className="text-xs text-ink/60">
-            RankinSEO injects entity-optimized schema on every article we publish — hands-free.
+          RankinSEO researches keywords for your business and writes search-optimized articles. You review each one and publish it on your own website.
           </p>
         </div>
         <a
