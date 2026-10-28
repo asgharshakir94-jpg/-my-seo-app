@@ -68,7 +68,7 @@ export default async function BlogIndexPage() {
         .in('status', ['approved', 'exported'])
         .order('created_at', { ascending: false });
 
-    // Prints the exact database error message onto the viewport
+    
     if (error || !articles) {
         console.error('blog index query failed:', error?.message);
         return (

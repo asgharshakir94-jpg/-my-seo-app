@@ -47,7 +47,7 @@ export default function LeadMagnet({
     <div className="mt-8 rounded-xl border border-line bg-paper p-6">
       <p className="text-ink font-medium mb-1">Get the free {title}</p>
       <p className="text-sm text-ink/70 mb-4">
-        Enter your email and download it instantly — no spam, unsubscribe anytime.
+        Enter your email and download it instantly.
       </p>
       <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
         <input
