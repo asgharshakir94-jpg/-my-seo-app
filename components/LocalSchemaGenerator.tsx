@@ -52,7 +52,7 @@ function buildSchema(form: FormData): string {
     name: form.companyName || 'Your Company Name',
     telephone: form.phone || '+1-000-000-0000',
     description: CATEGORY_DESCRIPTIONS[form.category],
-    url: form.websiteUrl || 'https://example.com',
+    url: form.websiteUrl.trim() ? (/^https?:\/\//i.test(form.websiteUrl.trim()) ? form.websiteUrl.trim() : 'https://' + form.websiteUrl.trim()) : 'https://example.com',
     address: {
       '@type': 'PostalAddress',
       streetAddress: form.streetAddress || '123 Main Street',
