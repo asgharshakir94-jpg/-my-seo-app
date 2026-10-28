@@ -177,8 +177,7 @@ export default function ProspectFinder() {
                   className="mt-0.5"
                 />
                 <span>
-                  I agree to receive this PDF and occasional emails from RankinSEO about SEO tips and
-                  services. I can unsubscribe at any time. See our{' '}
+                I agree to receive this PDF by email. See our{' '}
                   <Link href="/privacy" className="underline">
                     privacy policy
                   </Link>
