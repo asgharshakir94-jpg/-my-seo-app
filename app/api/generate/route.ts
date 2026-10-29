@@ -290,42 +290,57 @@ export async function POST(req: Request) {
       fetchArticleImage(keyword, requestId),
     ]);
 
-    // STEP 1.5: Create (or reuse) the campaign row up front
+    // STEP 1.5: Create (or reuse) the campaign row up front.
+    // A keyword is unique per customer (ignoring upper/lower case). Slugs are unique site-wide,
+    // so if another customer already uses this slug we retry with a short suffix.
     let campaignRow;
-    const { data: inserted, error: insertError } = await supabaseAdmin
-      .from('campaigns')
-      .insert({
-        keyword,
-        slug,
-        title: seoTitle,
-        meta_description: metaDescription,  
-        status: 'generating',
-        brief: brief || null,
-        unverified_claims: brief?.unverified_claims || null,
-        user_id: user.id,
-      })
-      .select()
-      .single();
+    let slugToTry = slug;
+    const keywordPattern = keyword.replace(/[\\%_]/g, '\\$&');
+    for (let attempt = 0; attempt < 4 && !campaignRow; attempt++) {
+      const { data: inserted, error: insertError } = await supabaseAdmin
+        .from('campaigns')
+        .insert({
+          keyword,
+          slug: slugToTry,
+          title: seoTitle,
+          meta_description: metaDescription,
+          status: 'generating',
+          brief: brief || null,
+          unverified_claims: brief?.unverified_claims || null,
+          user_id: user.id,
+        })
+        .select()
+        .single();
 
-    if (insertError) {
-      // If it failed because the keyword already exists, reuse that row instead
-      if (insertError.code === '23505') {
-        const { data: existing, error: fetchError } = await supabaseAdmin
-          .from('campaigns')
-          .select()
-          .eq('user_id', user.id)
-          .ilike('keyword', keyword)
-          .single();
-
-        if (fetchError || !existing) {
-          return new Response(JSON.stringify({ error: 'This keyword is already in use. Please try a slightly different keyword.' }), { status: 409 });
-        }
-        campaignRow = existing;
-      } else {
-        return new Response(JSON.stringify({ error: insertError.message }), { status: 500 });
+      if (!insertError) {
+        campaignRow = inserted;
+        break;
       }
-    } else {
-      campaignRow = inserted;
+
+      if (insertError.code !== '23505') {
+        logger.error({ event: 'campaign_insert_failed', requestId, error: insertError.message });
+        return new Response(JSON.stringify({ error: 'Could not start the article. Please try again.' }), { status: 500 });
+      }
+
+      // Unique violation. Case 1: this customer already has this keyword, so reuse that row.
+      const { data: existing } = await supabaseAdmin
+        .from('campaigns')
+        .select()
+        .eq('user_id', user.id)
+        .ilike('keyword', keywordPattern)
+        .maybeSingle();
+
+      if (existing) {
+        campaignRow = existing;
+        break;
+      }
+
+      // Case 2: another customer already uses this slug, so retry with a short suffix.
+      slugToTry = `${slug}-${Math.random().toString(36).slice(2, 6)}`;
+    }
+
+    if (!campaignRow) {
+      return new Response(JSON.stringify({ error: 'Could not create the article. Please try again or use a slightly different keyword.' }), { status: 409 });
     }
 
     // Mark the matching keyword_suggestions row as used (best-effort — never blocks generation)
@@ -410,7 +425,7 @@ ${JSON.stringify(brief, null, 2)}`
               // Schedule risk scoring to run AFTER this response is fully sent.
               // Using after() means it can't block or get killed alongside the
               // client-facing stream — it runs as its own background task.
-              after(() => runRiskScoringInBackground(openai, campaignRow.id, finalArticle, requestId, slug));
+              after(() => runRiskScoringInBackground(openai, campaignRow.id, finalArticle, requestId, campaignRow.slug));
             }
           }
 
