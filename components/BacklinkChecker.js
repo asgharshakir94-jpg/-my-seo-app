@@ -2,11 +2,14 @@
 
 import { useState } from 'react';
 
+const PAGE_SIZE = 10;
+
 export default function BacklinkChecker() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [error, setError] = useState('');
+  const [visible, setVisible] = useState(PAGE_SIZE);
 
   const handleCheck = async (e) => {
     e.preventDefault();
@@ -15,6 +18,7 @@ export default function BacklinkChecker() {
     setLoading(true);
     setError('');
     setResults(null);
+    setVisible(PAGE_SIZE);
 
     try {
       const response = await fetch('/api/check-backlinks', {
@@ -42,6 +46,12 @@ export default function BacklinkChecker() {
       setLoading(false);
     }
   };
+
+  const links = (results && results.links) || [];
+  const total = (results && results.totalBacklinks) || 0;
+  const shownCount = Math.min(visible, links.length);
+  const hasMoreToReveal = shownCount < links.length;
+  const listWasCapped = total > links.length;
 
   return (
     <div className="max-w-3xl mx-auto my-12 p-6 bg-white rounded-xl shadow-md border border-gray-100">
@@ -89,7 +99,11 @@ export default function BacklinkChecker() {
             </div>
           </div>
 
-          <h3 className="font-semibold text-gray-700 mb-3 text-sm">{results.links && results.totalBacklinks > results.links.length ? `Showing ${results.links.length} of ${results.totalBacklinks} external links found on this page:` : 'Links found on this page:'}</h3>
+          <h3 className="font-semibold text-gray-700 mb-3 text-sm">
+            {total > shownCount
+              ? `Showing ${shownCount} of ${total} external links found on this page:`
+              : 'Links found on this page:'}
+          </h3>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-sm">
               <thead>
@@ -100,9 +114,9 @@ export default function BacklinkChecker() {
                 </tr>
               </thead>
               <tbody>
-                {results.links && results.links.length > 0 ? (
-                  results.links.map((link, idx) => (
-                    <tr key={idx} className="hover:bg-gray-50 text-gray-600">
+                {links.length > 0 ? (
+                  links.slice(0, shownCount).map((link, idx) => (
+                    <tr key={link.source + idx} className="hover:bg-gray-50 text-gray-600">
                       <td className="p-2 border-b max-w-xs truncate">
                         <a
                           href={link.source}
@@ -131,6 +145,31 @@ export default function BacklinkChecker() {
               </tbody>
             </table>
           </div>
+
+          {hasMoreToReveal && (
+            <div className="flex items-center justify-center gap-3 mt-4">
+              <button
+                type="button"
+                onClick={() => setVisible((v) => v + PAGE_SIZE)}
+                className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+              >
+                Show {Math.min(PAGE_SIZE, links.length - shownCount)} more
+              </button>
+              <button
+                type="button"
+                onClick={() => setVisible(links.length)}
+                className="text-sm text-blue-600 hover:text-blue-800 underline"
+              >
+                Show all
+              </button>
+            </div>
+          )}
+
+          {!hasMoreToReveal && listWasCapped && (
+            <p className="text-xs text-gray-400 text-center mt-4">
+              This page has more links than we can list. Showing the first {links.length}.
+            </p>
+          )}
         </div>
       )}
     </div>

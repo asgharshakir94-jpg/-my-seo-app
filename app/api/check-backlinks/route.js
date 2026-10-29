@@ -8,7 +8,7 @@ export const runtime = 'nodejs';
 const TIMEOUT_MS = 8000;
 const MAX_REDIRECTS = 3;
 const MAX_BYTES = 2 * 1024 * 1024; // read at most 2 MB of the page
-const MAX_LINKS_SHOWN = 10;
+const MAX_LINKS_SHOWN = 500;
 
 class HttpError extends Error {
   constructor(message, status) {
