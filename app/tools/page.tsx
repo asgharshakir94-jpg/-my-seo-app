@@ -42,7 +42,7 @@ export default function ToolsIndexPage() {
       <div className="border-t border-line pt-12">
         <h2 className="text-xl font-semibold text-ink mb-2">Free SEO tools for trades businesses</h2>
         <p className="text-ink/70 mb-8">
-          Find keywords customers search for, discover sites that can link to you, and get your business found on Google. Free, no sign-up.
+        Find keywords customers search for, discover sites that can link to you, and get your business found on Google. Free to use, no account needed.
         </p>
         
         <div className="grid gap-4 sm:grid-cols-2">

@@ -89,7 +89,7 @@ export default function BacklinkChecker() {
             </div>
           </div>
 
-          <h3 className="font-semibold text-gray-700 mb-3 text-sm">Links found on this page:</h3>
+          <h3 className="font-semibold text-gray-700 mb-3 text-sm">{results.links && results.totalBacklinks > results.links.length ? `Showing ${results.links.length} of ${results.totalBacklinks} external links found on this page:` : 'Links found on this page:'}</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-sm">
               <thead>
