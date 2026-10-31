@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabase';
 import { createClient } from '@/lib/supabase/server';
 import { notifyGoogleIndexing } from '@/lib/googleIndexing';
+import { BLOG_OWNER_USER_ID } from '@/lib/blogOwner';
 
 export async function POST(req: Request) {
   try {
@@ -17,44 +18,35 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ error: 'Campaign id is required' }), { status: 400 });
     }
 
-    const { data: campaign } = await supabaseAdmin
+    // Approve only the caller's own article, and keep the slug it was saved with.
+    const { data, error } = await supabaseAdmin
       .from('campaigns')
-      .select('keyword')
-      .eq('id', id)
-      .single();
-
-    const slug = campaign?.keyword
-      ?.toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
-
-      const { data, error } = await supabaseAdmin
-      .from('campaigns')
-      .update({ status: 'approved', slug })
+      .update({ status: 'approved' })
       .eq('id', id)
       .eq('user_id', user.id)
-      .select('id');
+      .select('id, slug');
 
     if (error) {
-      return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+      return new Response(JSON.stringify({ error: 'Could not approve the article. Please try again.' }), { status: 500 });
     }
 
     if (!data || data.length === 0) {
       return new Response(
-        JSON.stringify({ error: 'No matching campaign found to approve (id/user mismatch).' }),
+        JSON.stringify({ error: 'No matching campaign found to approve.' }),
         { status: 404 }
       );
     }
 
-    if (slug) {
+    // Only the blog owner's articles are published and reported to Google.
+    const published = user.id === BLOG_OWNER_USER_ID;
+    const slug = data[0].slug;
+    if (published && slug) {
       await notifyGoogleIndexing(`https://rankinseo.xyz/blog/${slug}/`);
     }
 
-    return new Response(JSON.stringify({ success: true }), { status: 200 });
+    return new Response(JSON.stringify({ success: true, published }), { status: 200 });
 
   } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Something went wrong. Please try again.' }), { status: 500 });
   }
 }
-

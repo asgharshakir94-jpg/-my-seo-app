@@ -29,6 +29,7 @@ export default function DashboardPage() {
   const [generating, setGenerating] = useState<boolean>(false);
   const [approving, setApproving] = useState<boolean>(false);
   const [selectedStatus, setSelectedStatus] = useState<string>("");
+  const [isOwner, setIsOwner] = useState<boolean>(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedScore, setSelectedScore] = useState<number | null>(null);
   const [selectedBreakdown, setSelectedBreakdown] = useState<any>(null);
@@ -106,7 +107,8 @@ export default function DashboardPage() {
   const loadData = async () => {
     try {
       const res = await fetch('/api/history');
-      if (!res.ok) throw new Error('API server error');
+      if (!res.ok) throw new Error('API server error');      
+      setIsOwner(res.headers.get('x-blog-owner') === '1');
       const data = await res.json();
       if (Array.isArray(data)) setCampaigns(data);
     } catch (err) {
@@ -208,7 +210,8 @@ export default function DashboardPage() {
       });
       if (res.ok) {
         setSelectedStatus('approved');
-        alert("Campaign approved! It will now appear on your blog.");
+        const result = await res.json().catch(() => ({}));
+        alert(result?.published ? "Approved and published to your blog." : "Approved! Use Copy HTML or Download to put this article on your own website.");
         await loadData();
       } else {
         alert("Approval failed.");
@@ -218,6 +221,30 @@ export default function DashboardPage() {
     } finally {
       setApproving(false);
     }
+  };
+  
+  const copyArticle = async () => {
+    try {
+      await navigator.clipboard.writeText(selectedHtml);
+      alert("Article HTML copied. Paste it into the HTML or code block of your website's blog editor.");
+    } catch {
+      alert("Your browser blocked copying. Use Download instead.");
+    }
+  };
+
+  const downloadArticle = () => {
+    const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const slug = (targetKeyword || 'article').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'article';
+    const page = `<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>${escapeHtml(targetKeyword)}</title>\n</head>\n<body>\n${selectedHtml}\n</body>\n</html>\n`;
+    const blob = new Blob([page], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${slug}.html`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -367,8 +394,24 @@ export default function DashboardPage() {
                     disabled={approving}
                     className="px-4 py-2 text-xs font-bold text-white rounded-md bg-yellow-600 hover:opacity-90 active:scale-95 transition-all disabled:opacity-60"
                   >
-                    {approving ? "Approving..." : "Approve for Export"}
+                    {approving ? "Approving..." : (isOwner ? "Approve & Publish" : "Approve")}
                   </button>
+                )}
+                {(selectedStatus === 'approved' || selectedStatus === 'exported') && selectedHtml && (
+                  <>
+                    <button
+                      onClick={copyArticle}
+                      className="px-4 py-2 text-xs font-bold text-ink rounded-md border border-line bg-paper hover:border-sand active:scale-95 transition-all"
+                    >
+                      Copy HTML
+                    </button>
+                    <button
+                      onClick={downloadArticle}
+                      className="px-4 py-2 text-xs font-bold text-white rounded-md bg-green-600 hover:opacity-90 active:scale-95 transition-all"
+                    >
+                      Download
+                    </button>
+                  </>
                 )}
               </div>
             </div>
