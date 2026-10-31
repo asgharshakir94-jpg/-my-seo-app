@@ -235,12 +235,14 @@ export default function DashboardPage() {
   const downloadArticle = () => {
     const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const slug = (targetKeyword || 'article').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'article';
-    const page = `<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>${escapeHtml(targetKeyword)}</title>\n</head>\n<body>\n${selectedHtml}\n</body>\n</html>\n`;
+    const styles = 'body{margin:0;background:#EFE7D6;color:#1C1B1A;font-family:Arial,Helvetica,sans-serif;font-size:18px;line-height:1.78;-webkit-font-smoothing:antialiased}.article{max-width:768px;margin:0 auto;padding:64px 24px}h1{font-size:1.875rem;line-height:2.25rem;font-weight:600;letter-spacing:-0.025em;margin:0 0 1.5rem}h2{font-size:1.5rem;line-height:2rem;font-weight:600;margin:2.5rem 0 1rem}h3{font-size:1.25rem;line-height:1.75rem;font-weight:600;margin:2rem 0 0.75rem}p{margin:0 0 1.25rem;color:rgba(28,27,26,0.9)}ul,ol{margin:0 0 1.25rem;padding-left:1.5rem}li{margin:0.5rem 0}a{color:#1C1B1A;text-decoration:underline}strong{font-weight:600}img{max-width:100%;height:auto;border-radius:12px;display:block}figure{margin:1.5rem 0}';
+    const page = `<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>${escapeHtml(targetKeyword)}</title>\n<style>${styles}</style>\n</head>\n<body>\n<article class="article">\n${selectedHtml}\n</article>\n</body>\n</html>\n`;
     const blob = new Blob([page], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `${slug}.html`;
+    
     document.body.appendChild(a);
     a.click();
     a.remove();
