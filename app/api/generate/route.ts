@@ -10,6 +10,7 @@ import { randomUUID } from 'crypto';
 import { computeArticleScore } from '@/lib/seoScore';
 import { matchTrade } from '@/lib/tradeCalculators';
 import { notifyGoogleIndexing } from '@/lib/googleIndexing';
+import { BLOG_OWNER_USER_ID } from '@/lib/blogOwner';
 import { checkArticleAllowance } from '@/lib/planLimits';
 
 function slugify(text: string): string {
@@ -246,7 +247,7 @@ async function runRiskScoringInBackground(openai: OpenAI, campaignId: number, co
       })
       .eq('id', campaignId)
       .eq('status', 'pending_review')  // only touch it if still pending — don't clobber a manual approve
-      .select('id');
+      .select('id, user_id');
     
     if (riskUpdateData && riskUpdateData.length === 0) {
       logger.info({ event: 'risk_score_skipped_already_actioned', requestId, campaignId });
@@ -258,7 +259,7 @@ async function runRiskScoringInBackground(openai: OpenAI, campaignId: number, co
         logger.info({ event: 'risk_scoring_completed', requestId, campaignId, status: finalStatus, riskScore: riskResult.risk_score });
 
       
-        if (finalStatus === 'approved' && riskUpdateData && riskUpdateData.length > 0) {
+        if (finalStatus === 'approved' && riskUpdateData && riskUpdateData.length > 0 && riskUpdateData[0].user_id === BLOG_OWNER_USER_ID) {
           await notifyGoogleIndexing(`https://rankinseo.xyz/blog/${slug}/`);
         }
        }  
