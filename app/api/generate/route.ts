@@ -78,8 +78,31 @@ function descriptionFromArticle(html: string, fallback: string): string {
 }
 
 
+const IMAGE_STOP_WORDS = new Set([
+  'what', 'is', 'are', 'how', 'to', 'do', 'does', 'the', 'a', 'an', 'for', 'of', 'in', 'on', 'near', 'me',
+  'my', 'your', 'you', 'can', 'should', 'vs', 'and', 'or', 'best', 'top', 'guide', 'tips', 'cost', 'much',
+]);
+
+// Builds a short list of searches to try, from most specific to most general.
+function imageSearchQueries(keyword: string): string[] {
+  const clean = keyword.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  const words = clean.split(' ').filter((w) => w && !IMAGE_STOP_WORDS.has(w));
+
+  const queries: string[] = [keyword.trim(), words.slice(0, 3).join(' '), words.slice(0, 2).join(' ')];
+
+  if (/roof|shingle|gutter/.test(clean)) queries.push('roofing contractor');
+  else if (/plumb|drain|pipe|water heater/.test(clean)) queries.push('plumber');
+  else if (/hvac|air conditioning|furnace|heat pump/.test(clean)) queries.push('hvac technician');
+  else if (/electric/.test(clean)) queries.push('electrician');
+  else if (/solar/.test(clean)) queries.push('solar panels');
+  else queries.push('small business owner laptop');
+
+  return queries.filter((q, i) => q.length > 0 && queries.indexOf(q) === i);
+}
+
 // Fetches one relevant Unsplash photo for the article header.
-// Fails gracefully — if the API is down, rate-limited, or no results,
+// Tries the full keyword first, then simpler searches, so most articles get a fitting photo.
+// Fails gracefully: if the API is down, rate-limited, or nothing is found,
 // the article still generates and saves normally, just without an image.
 async function fetchArticleImage(keyword: string, requestId: string): Promise<{ url: string; alt: string; credit: string; creditUrl: string } | null> {
   const accessKey = process.env.UNSPLASH_ACCESS_KEY;
@@ -88,38 +111,40 @@ async function fetchArticleImage(keyword: string, requestId: string): Promise<{ 
     return null;
   }
 
-  try {
-    const res = await fetch(
-      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(keyword)}&per_page=1&orientation=landscape`,
-      { headers: { Authorization: `Client-ID ${accessKey}` } }
-    );
+  for (const query of imageSearchQueries(keyword)) {
+    try {
+      const res = await fetch(
+        `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape`,
+        { headers: { Authorization: `Client-ID ${accessKey}` } }
+      );
 
-    if (!res.ok) {
-      logger.error({ event: 'unsplash_fetch_failed', requestId, status: res.status });
+      if (!res.ok) {
+        logger.error({ event: 'unsplash_fetch_failed', requestId, status: res.status, query });
+        if (res.status === 403 || res.status === 429) return null; // rate limited: stop trying
+        continue;
+      }
+
+      const data = await res.json();
+      const photo = data.results?.[0];
+      if (!photo) {
+        logger.info({ event: 'unsplash_no_results', requestId, query });
+        continue;
+      }
+
+      return {
+        url: photo.urls.regular,
+        alt: photo.alt_description || keyword,
+        credit: photo.user.name,
+        creditUrl: photo.user.links.html,
+      };
+    } catch (err) {
+      logger.error({ event: 'unsplash_fetch_error', requestId, query, error: err instanceof Error ? err.message : String(err) });
       return null;
     }
-
-    const data = await res.json();
-    const photo = data.results?.[0];
-    if (!photo) {
-      logger.info({ event: 'unsplash_no_results', requestId, keyword });
-      return null;
-    }
-
-    return {
-      url: photo.urls.regular,
-      alt: photo.alt_description || keyword,
-      credit: photo.user.name,
-      creditUrl: photo.user.links.html,
-    };
-  } catch (err) {
-    logger.error({ event: 'unsplash_fetch_error', requestId, error: err instanceof Error ? err.message : String(err) });
-    return null;
   }
+
+  return null;
 }
-
-
-
 const BRIEF_SYSTEM_PROMPT = `You are an SEO research assistant. Given a target keyword (and optional city/industry context), produce a structured content brief as raw JSON only — no markdown, no backticks, no commentary.
 
 The JSON must have this exact shape:
