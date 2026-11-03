@@ -51,9 +51,8 @@ function LoginForm() {
         </div>
 
         <div className="bg-surface border border-line rounded-lg p-8 shadow-flat">
-          <h1 className="text-xl font-bold text-ink mb-1">Log in</h1>
-          <p className="text-sm text-slate mb-6">Welcome back to your workspace.</p>
-
+          <h1 className="text-xl font-bold text-ink mb-1">Log in or create an account</h1>
+         <p className="text-sm text-slate mb-6">Log in to continue, or sign up to start your 14-day free trial.</p>
           <form onSubmit={handleLogin} className="space-y-3">
             <input
               type="email"
