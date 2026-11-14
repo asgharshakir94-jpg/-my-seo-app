@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const initialForm = {
   name: "",
@@ -21,6 +21,15 @@ export default function WriteForUsForm() {
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState<{ type: "ok" | "error"; text: string } | null>(null);
 
+  const statusRef = useRef<HTMLParagraphElement>(null);
+
+  // Bring the message into view so people never miss it.
+  useEffect(() => {
+    if (status) statusRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [status]);
+
+  const isLink = /^https?:\/\/\S+$/i.test(form.article.trim());
+  const wordCount = form.article.split(/\s+/).filter(Boolean).length;
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -133,6 +142,11 @@ export default function WriteForUsForm() {
           className={inputClass}
           placeholder="Paste your article here, or paste a Google Docs link (set to anyone with the link can view). 600 words or more is ideal."
         />
+        <p className="mt-1 text-xs text-ink/60">
+          {isLink
+            ? "Link detected."
+            : `${wordCount} words (600 or more needed, or paste a link instead)`}
+        </p>
       </div>
 
       {/* Honeypot: hidden from people, bots tend to fill it in */}
@@ -172,7 +186,8 @@ export default function WriteForUsForm() {
 
       {status && (
         <p
-          role="status"
+        ref={statusRef}  
+        role="status"
           className={
             status.type === "ok"
               ? "text-sm text-ink bg-paper border border-line rounded-md p-3"

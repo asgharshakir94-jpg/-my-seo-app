@@ -9,6 +9,8 @@ const supabase = createClient(
 // Where the new-submission alert is sent. Change if your inbox differs.
 const ALERT_TO = "asgharshakir94@gmail.com";
 
+const MIN_WORDS = 600;
+
 const clean = (value: unknown, max: number) =>
   typeof value === "string" ? value.trim().slice(0, max) : "";
 
@@ -91,13 +93,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Please enter a valid email." }, { status: 400 });
     }
 
-    if (article.length < 200) {
-      return NextResponse.json(
-        { error: "Please paste your article, or a link to it, in the article box." },
-        { status: 400 }
-      );
-    }
-
+        // A single web link (for example a Google Docs link) is accepted as it is.
+        const isLink = /^https?:\/\/\S+$/i.test(article);
+        const wordCount = article.split(/\s+/).filter(Boolean).length;
+    
+        if (!isLink && wordCount < MIN_WORDS) {
+          return NextResponse.json(
+            {
+              error: `Your article needs at least ${MIN_WORDS} words. You have ${wordCount}. You can also paste a link to it instead.`,
+            },
+            { status: 400 }
+          );
+        }
+        
     const { error } = await supabase
       .from("guest_submissions")
       .insert({ name, email, business, website: website || null, title, article });
